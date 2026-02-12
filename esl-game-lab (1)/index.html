@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESL Game Lab - English Classroom Game Engine</title>
+    <meta name="description" content="AI-powered game activity engine for elementary English educators. Find the perfect classroom game instantly." />
+
+    <!-- Preconnect: eliminate DNS+TLS latency for critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://esm.sh" crossorigin />
+    <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3, h4, h5, h6, .pixel-font {
+        font-family: 'Press Start 2P', cursive;
+        text-transform: uppercase;
+      }
+      .retro-text {
+        font-family: 'VT323', monospace;
+      }
+      /* Custom Scrollbar - Cleaner */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+      }
+      /* Focus */
+      *:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+    </style>
+    <script>
+      (function() {
+        // AI Studio Preview 환경에서 서비스워커 접근 시 InvalidStateError 방지 가드
+        const isSecure = window.isSecureContext && 
+                         window.location.protocol === "https:" && 
+                         !window.location.href.startsWith("blob:");
+        if (isSecure && 'serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          }).catch(err => console.debug('SW unregister skipped', err));
+        }
+        if (isSecure && 'caches' in window) {
+          caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+          }).catch(err => console.debug('Cache clear skipped', err));
+        }
+      })();
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
