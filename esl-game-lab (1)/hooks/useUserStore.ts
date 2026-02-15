@@ -147,6 +147,9 @@ export const useUserStore = () => {
   }, []);
 
   useEffect(() => {
+    // Track if this is the first auth state change to avoid redundant syncs
+    let isInitialLoad = true;
+
     // 1. 리다이렉트 결과 체크 (로그인 창 떴다 사라지는 문제 해결용)
     getRedirectResult(auth).then((result) => {
       if (result) {
@@ -168,17 +171,24 @@ export const useUserStore = () => {
         };
         console.log("👤 User Detected:", profile.email, profile.uid);
         setCurrentUser(profile);
-        await syncFromFirestore(user.uid);
-        
+
+        // Only sync from Firestore on initial load if we don't have cached data
+        const cachedFavs = localStorage.getItem(getUserFavKey(user.uid));
+        if (!cachedFavs || !isInitialLoad) {
+          await syncFromFirestore(user.uid);
+        }
+
+        // Update last seen timestamp (lightweight operation)
         setDoc(doc(db, "users", user.uid), {
             ...profile,
             lastSeen: serverTimestamp()
-        }, { merge: true });
+        }, { merge: true }).catch(err => console.error("Failed to update lastSeen:", err));
       } else {
         setCurrentUser(null);
         console.log("👤 User Logged Out");
       }
       setIsAuthLoading(false);
+      isInitialLoad = false;
     });
     return () => unsubscribe();
   }, [syncFromFirestore]);
