@@ -35,7 +35,7 @@ export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favori
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
   const isDark = settings.darkMode;
-  const MASTER_CODE = '042905140930';
+  const MASTER_CODE = import.meta.env.VITE_ADMIN_CODE || '042905140930';
 
   useEffect(() => {
     const meta = document.createElement('meta');

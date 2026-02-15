@@ -139,12 +139,10 @@ export const NeedIntroCard: React.FC<Props> = ({
   useEffect(() => {
     const updateProgress = () => {
       setProgress(prev => {
-     if (isReady && suggestion && !finishTriggered.current) {
-  finishTriggered.current = true;
-  setTimeout(onAutoFinish, 120);
-  return 100;
-}
-          return prev + 1.5; 
+        if (isReady && suggestion && !finishTriggered.current) {
+          finishTriggered.current = true;
+          setTimeout(onAutoFinish, 120);
+          return 100;
         }
         if (!isReady) {
           const increment = prev < 50 ? 0.6 : (prev < 90 ? 0.2 : 0.04);

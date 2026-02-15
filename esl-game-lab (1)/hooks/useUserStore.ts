@@ -26,6 +26,20 @@ const STORAGE_KEYS = {
   HISTORY: 'eslgamelab_history',
 };
 
+// Validate data from Firestore matches GameRecommendation interface
+const isValidGameRecommendation = (data: any): data is GameRecommendation => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof data.id === 'string' &&
+    typeof data.ranking === 'number' &&
+    typeof data.game_title === 'string' &&
+    Array.isArray(data.tags) &&
+    typeof data.thumbnail_image === 'string' &&
+    typeof data.summary_en === 'string'
+  );
+};
+
 const DEFAULT_SETTINGS: AppSettings = {
   darkMode: true,
   volume: 100,
@@ -83,7 +97,9 @@ export const useUserStore = () => {
     try {
       const favsCol = collection(db, `users/${uid}/favorites`);
       const snapshot = await getDocs(favsCol);
-      const cloudFavs = snapshot.docs.map(doc => doc.data() as GameRecommendation);
+      const cloudFavs = snapshot.docs
+        .map(doc => doc.data())
+        .filter(isValidGameRecommendation);
       setFavorites(cloudFavs);
       localStorage.setItem(getUserFavKey(uid), JSON.stringify(cloudFavs));
 

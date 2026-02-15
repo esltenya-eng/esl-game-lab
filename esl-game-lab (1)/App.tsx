@@ -8,7 +8,9 @@ import { Screen5_Favorites } from './components/Screen5_Favorites';
 import { Screen6_Contact } from './components/Screen6_Contact';
 import { Screen7_Auth } from './components/Screen7_Auth';
 import { Screen8_PrivacyPolicy } from './components/Screen8_PrivacyPolicy';
+import { Screen9_ResetPassword } from './components/Screen9_ResetPassword';
 import { Screen10_TermsOfService } from './components/Screen10_TermsOfService';
+import { Screen11_AdminExport } from './components/Screen11_AdminExport';
 import { Footer } from './components/Footer';
 import { AdBanner } from './components/AdBanner'; 
 import { ToolsOverlay } from './components/ToolsOverlay';
@@ -160,6 +162,12 @@ const App: React.FC = () => {
         return <Screen10_TermsOfService onBack={goBack} settings={settings} />;
       case AppScreen.TOOLS:
         return <ToolsOverlay onClose={goBack} onGoHome={resetToHome} settings={settings} />;
+      case AppScreen.RESET_PASSWORD:
+        const urlParams = new URLSearchParams(window.location.search);
+        const oobCode = urlParams.get('oobCode') || '';
+        return <Screen9_ResetPassword oobCode={oobCode} onSuccess={() => navigateTo(AppScreen.AUTH)} settings={settings} />;
+      case AppScreen.ADMIN_EXPORT:
+        return <Screen11_AdminExport onBack={goBack} settings={settings} favorites={favorites} history={history} />;
       case AppScreen.GAMIFICATION_GUIDE:
         return (
           <div className="eglg-guide max-w-6xl mx-auto px-4 md:px-8 lg:px-12 xl:px-16 py-8 space-y-10 animate-in fade-in duration-700 pb-40 text-slate-200 selection:bg-emerald-500 selection:text-white">
@@ -169,17 +177,17 @@ const App: React.FC = () => {
                 letter-spacing: -0.01em;
               }
             `}</style>
-            
+
             <div className="flex items-center justify-between py-4 border-b border-slate-800/50 mb-4">
               <button onClick={goBack} className="w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="bg-slate-800/55 border border-slate-600/40 rounded-[2.5rem] px-6 py-8 md:px-12 md:pt-8 md:pb-12 space-y-16 shadow-2xl">
               <header className="text-center space-y-6 max-w-4xl mx-auto">
                 <h1 className="text-[clamp(20px,2.6vw,38px)] font-extrabold text-white tracking-tight leading-tight break-keep">{g.title}</h1>
-                <p className="text-lg md:text-xl text-slate-400 leading-[1.8] font-semibold break-keep opacity-95">“{g.subtitle1}” <br className="hidden md:block"/>{g.subtitle2}</p>
+                <p className="text-lg md:text-xl text-slate-400 leading-[1.8] font-semibold break-keep opacity-95">"{g.subtitle1}" <br className="hidden md:block"/>{g.subtitle2}</p>
               </header>
 
               <section className="bg-slate-800/65 border border-slate-700/40 rounded-3xl p-6 md:p-10 shadow-sm space-y-8 max-w-[800px] mx-auto">
@@ -204,6 +212,16 @@ const App: React.FC = () => {
                 </div>
               </section>
             </div>
+          </div>
+        );
+      case AppScreen.GAMIFICATION_TOOLS:
+        return (
+          <div className={`max-w-4xl mx-auto px-4 py-8 ${settings.darkMode ? 'text-white' : 'text-slate-900'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <button onClick={goBack} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Back</button>
+            </div>
+            <h1 className="text-3xl font-bold mb-4">Gamification Tools</h1>
+            <p className="text-lg opacity-75">Coming soon...</p>
           </div>
         );
       case AppScreen.SELECTION:
