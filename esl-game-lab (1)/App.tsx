@@ -1,20 +1,22 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Screen1_Selection } from './components/Screen1_Selection';
 import { Screen2_List } from './components/Screen2_List';
 import { Screen3_Detail } from './components/Screen3_Detail';
 import { Screen4_Settings } from './components/Screen4_Settings';
 import { Screen5_Favorites } from './components/Screen5_Favorites';
 import { Screen6_Contact } from './components/Screen6_Contact';
-import { Screen7_Auth } from './components/Screen7_Auth';
 import { Screen8_PrivacyPolicy } from './components/Screen8_PrivacyPolicy';
-import { Screen9_ResetPassword } from './components/Screen9_ResetPassword';
 import { Screen10_TermsOfService } from './components/Screen10_TermsOfService';
-import { Screen11_AdminExport } from './components/Screen11_AdminExport';
 import { Footer } from './components/Footer';
-import { AdBanner } from './components/AdBanner'; 
-import { ToolsOverlay } from './components/ToolsOverlay';
+import { AdBanner } from './components/AdBanner';
 import { NeedIntroCard } from './components/NeedIntroCard';
+
+// Lazy load heavy/infrequently used screens for better initial load performance
+const Screen7_Auth = lazy(() => import('./components/Screen7_Auth').then(m => ({ default: m.Screen7_Auth })));
+const Screen9_ResetPassword = lazy(() => import('./components/Screen9_ResetPassword').then(m => ({ default: m.Screen9_ResetPassword })));
+const Screen11_AdminExport = lazy(() => import('./components/Screen11_AdminExport').then(m => ({ default: m.Screen11_AdminExport })));
+const ToolsOverlay = lazy(() => import('./components/ToolsOverlay').then(m => ({ default: m.ToolsOverlay })));
 import { AppScreen, SelectionState, GameRecommendation } from './types';
 import { TRANSLATIONS, DEVELOPER_BLOG_URL } from './constants';
 import { MessageCircle, Wrench, Heart, Settings, Plus, X, ArrowUp, Home, BookOpen, Rss, Layers, Target, Lightbulb, AlertTriangle, Zap, CheckCircle2, Users, Flag, Sparkles, ArrowLeft } from 'lucide-react';
@@ -234,8 +236,17 @@ const App: React.FC = () => {
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${settings.darkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'} text-base font-sans relative overflow-x-hidden`}>
       <div className="fixed inset-0 pointer-events-none border-[12px] border-slate-900/20 z-0"></div>
 
-      <main className="flex-1 pb-2 relative z-10 overflow-x-hidden"> 
-        {renderScreenContent()}
+      <main className="flex-1 pb-2 relative z-10 overflow-x-hidden">
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <p className="mt-4 text-sm opacity-75">Loading...</p>
+            </div>
+          </div>
+        }>
+          {renderScreenContent()}
+        </Suspense>
       </main>
 
       {isLoading && (
