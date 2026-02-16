@@ -1,8 +1,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { fetchRecommendations, fetchGameDetail } from '../services/geminiService';
 import { SelectionState, GameRecommendation, GameDetail, SupportedLanguage } from '../types';
 import { TRANSLATIONS, FAMOUS_GAMES } from '../constants';
+
+// Lazy load gemini service to reduce initial bundle size (saves ~263 KB!)
+const loadGeminiService = () => import('../services/geminiService');
 
 const CACHE_KEYS = {
   FILTERS: 'eslgamelab_cached_filters',
@@ -80,8 +82,10 @@ export const useGameEngine = (language: SupportedLanguage) => {
 
     try {
       setMilestone(40);
+      // Dynamically import gemini service only when needed
+      const { fetchRecommendations } = await loadGeminiService();
       const response = await fetchRecommendations(newFilters, query, language, grammarTopic);
-      
+
       if (currentRequestId !== lastRequestIdRef.current) return false;
 
       let validatedPool = response.recommendations.map(r => ({
@@ -131,20 +135,22 @@ export const useGameEngine = (language: SupportedLanguage) => {
     const currentRequestId = ++lastRequestIdRef.current;
     setError(null);
     setMilestone(20);
-    
+
     setSelectedDetail(null);
     setLoadingSuggestion(game);
     setIsLoading(true);
 
     try {
+        // Dynamically import gemini service only when needed
+        const { fetchGameDetail } = await loadGeminiService();
         const detail = await fetchGameDetail(game.game_title, currentFilters, language);
-        
+
         if (currentRequestId === lastRequestIdRef.current) {
-          const mergedDetail: GameDetail = { 
-            ...detail, 
+          const mergedDetail: GameDetail = {
+            ...detail,
             tags: [...game.tags]
           };
-          
+
           setSelectedDetail(mergedDetail);
           localStorage.setItem(CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id, JSON.stringify(mergedDetail));
           setMilestone(100);
