@@ -34,7 +34,11 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:${{ github.sha }}
-          docker build -t $IMAGE "./esl-game-lab (1)"
+          docker build \
+            --build-arg VITE_GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY }}" \
+            --build-arg VITE_ADMIN_CODE="${{ secrets.VITE_ADMIN_CODE }}" \
+            -t $IMAGE \
+            "./esl-game-lab (1)"
           docker push $IMAGE
 
       - name: Deploy to Cloud Run
