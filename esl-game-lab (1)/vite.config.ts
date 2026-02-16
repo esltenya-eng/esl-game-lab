@@ -22,19 +22,52 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           output: {
-            manualChunks: {
-              'react-vendor': ['react', 'react-dom'],
-              'icons': ['lucide-react'],
-              'genai': ['@google/genai']
+            manualChunks(id) {
+              // Core React libraries
+              if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+                return 'react-vendor';
+              }
+
+              // Icons library
+              if (id.includes('node_modules/lucide-react')) {
+                return 'icons';
+              }
+
+              // Lazy-loaded AI SDK (only loaded when needed)
+              if (id.includes('@google/genai') || id.includes('node_modules/google')) {
+                return 'genai';
+              }
+
+              // Screen components (lazy loaded by route)
+              if (id.includes('/components/Screen')) {
+                const match = id.match(/Screen(\d+)_/);
+                if (match) {
+                  return `screen-${match[1]}`;
+                }
+              }
+
+              // Firebase (if used)
+              if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
+                return 'firebase';
+              }
+
+              // Other large dependencies
+              if (id.includes('node_modules/')) {
+                return 'vendor';
+              }
             }
           }
         },
-        chunkSizeWarningLimit: 1000,
+        chunkSizeWarningLimit: 600,
         minify: 'esbuild',
-        target: 'es2020'
+        target: 'es2020',
+        cssCodeSplit: true,
+        sourcemap: false, // Disable sourcemaps in production for smaller bundles
+        reportCompressedSize: true
       },
       optimizeDeps: {
-        include: ['react', 'react-dom', 'lucide-react', '@google/genai']
+        include: ['react', 'react-dom', 'lucide-react']
+        // Removed '@google/genai' from here - will be lazy loaded
       }
     };
 });
