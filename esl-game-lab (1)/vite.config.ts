@@ -18,6 +18,23 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom'],
+              'icons': ['lucide-react'],
+              'genai': ['@google/genai']
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000,
+        minify: 'esbuild',
+        target: 'es2020'
+      },
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'lucide-react', '@google/genai']
       }
     };
 });

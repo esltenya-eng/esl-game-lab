@@ -1,22 +1,26 @@
 
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
-import { Screen1_Selection } from './components/Screen1_Selection';
-import { Screen2_List } from './components/Screen2_List';
-import { Screen3_Detail } from './components/Screen3_Detail';
-import { Screen4_Settings } from './components/Screen4_Settings';
-import { Screen5_Favorites } from './components/Screen5_Favorites';
-import { Screen6_Contact } from './components/Screen6_Contact';
-import { Screen8_PrivacyPolicy } from './components/Screen8_PrivacyPolicy';
-import { Screen10_TermsOfService } from './components/Screen10_TermsOfService';
-import { Footer } from './components/Footer';
-import { AdBanner } from './components/AdBanner';
-import { NeedIntroCard } from './components/NeedIntroCard';
 
-// Lazy load heavy/infrequently used screens for better initial load performance
+// Only load the home screen immediately for fastest initial load
+const Screen1_Selection = lazy(() => import('./components/Screen1_Selection').then(m => ({ default: m.Screen1_Selection })));
+
+// Lazy load all other screens
+const Screen2_List = lazy(() => import('./components/Screen2_List').then(m => ({ default: m.Screen2_List })));
+const Screen3_Detail = lazy(() => import('./components/Screen3_Detail').then(m => ({ default: m.Screen3_Detail })));
+const Screen4_Settings = lazy(() => import('./components/Screen4_Settings').then(m => ({ default: m.Screen4_Settings })));
+const Screen5_Favorites = lazy(() => import('./components/Screen5_Favorites').then(m => ({ default: m.Screen5_Favorites })));
+const Screen6_Contact = lazy(() => import('./components/Screen6_Contact').then(m => ({ default: m.Screen6_Contact })));
 const Screen7_Auth = lazy(() => import('./components/Screen7_Auth').then(m => ({ default: m.Screen7_Auth })));
+const Screen8_PrivacyPolicy = lazy(() => import('./components/Screen8_PrivacyPolicy').then(m => ({ default: m.Screen8_PrivacyPolicy })));
 const Screen9_ResetPassword = lazy(() => import('./components/Screen9_ResetPassword').then(m => ({ default: m.Screen9_ResetPassword })));
+const Screen10_TermsOfService = lazy(() => import('./components/Screen10_TermsOfService').then(m => ({ default: m.Screen10_TermsOfService })));
 const Screen11_AdminExport = lazy(() => import('./components/Screen11_AdminExport').then(m => ({ default: m.Screen11_AdminExport })));
 const ToolsOverlay = lazy(() => import('./components/ToolsOverlay').then(m => ({ default: m.ToolsOverlay })));
+
+// Lazy load UI components that aren't critical for initial render
+const Footer = lazy(() => import('./components/Footer').then(m => ({ default: m.Footer })));
+const AdBanner = lazy(() => import('./components/AdBanner').then(m => ({ default: m.AdBanner })));
+const NeedIntroCard = lazy(() => import('./components/NeedIntroCard').then(m => ({ default: m.NeedIntroCard })));
 import { AppScreen, SelectionState, GameRecommendation } from './types';
 import { TRANSLATIONS, DEVELOPER_BLOG_URL } from './constants';
 import { MessageCircle, Wrench, Heart, Settings, Plus, X, ArrowUp, Home, BookOpen, Rss, Layers, Target, Lightbulb, AlertTriangle, Zap, CheckCircle2, Users, Flag, Sparkles, ArrowLeft } from 'lucide-react';
