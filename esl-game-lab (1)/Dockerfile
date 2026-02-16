@@ -3,35 +3,44 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with clean install
+RUN npm ci --only=production=false && \
+    npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with production optimizations
 RUN npm run build
 
-# Production stage
+# Production stage - minimal image
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install serve to serve the static files
-RUN npm install -g serve
+# Add non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Install serve globally for serving static files
+RUN npm install -g serve@14 && \
+    npm cache clean --force
 
 # Copy built files from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
-# Expose port
+# Switch to non-root user
+USER nodejs
+
+# Expose port (Cloud Run uses 8080 by default)
 EXPOSE 8080
 
-# Health check
+# Health check for Cloud Run
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Start the application
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Start the application with production-optimized settings
+CMD ["serve", "-s", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching"]
