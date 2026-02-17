@@ -8,12 +8,16 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          // Proxy API requests to backend during development
+          '/api': {
+            target: env.VITE_API_URL || 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          }
+        }
       },
       plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY)
-      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
@@ -31,11 +35,6 @@ export default defineConfig(({ mode }) => {
               // Icons library
               if (id.includes('node_modules/lucide-react')) {
                 return 'icons';
-              }
-
-              // Lazy-loaded AI SDK (only loaded when needed)
-              if (id.includes('@google/genai') || id.includes('node_modules/google')) {
-                return 'genai';
               }
 
               // Screen components (lazy loaded by route)

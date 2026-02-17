@@ -13,6 +13,12 @@ RUN npm ci --only=production=false && \
 # Copy source code
 COPY . .
 
+# Build arguments for environment variables
+ARG VITE_API_URL
+ARG VITE_ADMIN_CODE
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_ADMIN_CODE=$VITE_ADMIN_CODE
+
 # Build the application with production optimizations
 RUN npm run build
 
