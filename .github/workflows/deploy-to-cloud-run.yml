@@ -1,11 +1,7 @@
 name: Deploy to Cloud Run
 
 on:
-  push:
-    branches:
-      - main
-      - master
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch: # Manual only - superseded by deploy.yml
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
