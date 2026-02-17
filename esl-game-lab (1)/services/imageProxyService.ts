@@ -1,7 +1,6 @@
-
 /**
- * Image Proxy Service
- * 브라우저에서 직접 API Key를 사용하지 않고 Cloud Run/Functions 서버 프록시를 호출합니다.
+ * Image Proxy Service - Frontend Client
+ * Calls backend API for secure image generation
  */
 
 interface GenerateImageRequest {
@@ -10,15 +9,12 @@ interface GenerateImageRequest {
   season?: string;
 }
 
+// Get API URL from environment or default to relative path
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 export const generateSecureImage = async (params: GenerateImageRequest): Promise<string> => {
-  // 실제 운영 환경에서는 서버 엔드포인트를 호출합니다.
-  // 예: const response = await fetch('https://api.esl-game-lab.com/image-proxy/generate', { ... })
-  
-  // 여기서는 프록시 패턴을 시뮬레이션합니다. 
-  // 서버측에서는 gemini-2.5-flash-image 모델을 사용하여 이미지를 생성하고 Base64를 반환해야 합니다.
-  
   try {
-    const response = await fetch('/api/image-proxy/generate', {
+    const response = await fetch(`${API_BASE_URL}/api/image-proxy/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,12 +27,15 @@ export const generateSecureImage = async (params: GenerateImageRequest): Promise
     });
 
     if (!response.ok) {
-        if (response.status === 429) throw new Error("Rate limit exceeded. Please try later.");
-        throw new Error("Failed to generate image via proxy.");
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Please try later.");
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to generate image via proxy.");
     }
 
     const data = await response.json();
-    return data.imageUrl || data.imageBase64; // data:image/png;base64,...
+    return data.imageUrl || data.imageBase64;
   } catch (error) {
     console.error("Image Proxy Error:", error);
     throw error;
