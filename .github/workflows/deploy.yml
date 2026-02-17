@@ -7,13 +7,16 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE: esl-game-lab
   REGION: us-west1
   REPOSITORY: esl-game-lab
+  API_SERVICE: esl-game-lab-api
+  FRONTEND_SERVICE: esl-game-lab
 
 jobs:
-  deploy:
+  deploy-api:
     runs-on: ubuntu-latest
+    outputs:
+      api_url: ${{ steps.deploy-api.outputs.url }}
 
     steps:
       - name: Checkout
@@ -31,21 +34,72 @@ jobs:
         run: |
           gcloud auth configure-docker $REGION-docker.pkg.dev
 
-      - name: Build and Push Docker Image
+      - name: Build and Push API Docker Image
         run: |
-          IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:${{ github.sha }}
+          API_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_SERVICE:${{ github.sha }}
           docker build \
-            --build-arg VITE_GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY }}" \
-            --build-arg VITE_ADMIN_CODE="${{ secrets.VITE_ADMIN_CODE }}" \
-            -t $IMAGE \
-            "./esl-game-lab (1)"
-          docker push $IMAGE
+            -t $API_IMAGE \
+            -f "./esl-game-lab (1)/api/Dockerfile" \
+            "./esl-game-lab (1)/api"
+          docker push $API_IMAGE
 
-      - name: Deploy to Cloud Run
+      - name: Deploy API to Cloud Run
+        id: deploy-api
         run: |
-          IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:${{ github.sha }}
-          gcloud run deploy $SERVICE \
-            --image $IMAGE \
+          API_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_SERVICE:${{ github.sha }}
+          gcloud run deploy $API_SERVICE \
+            --image $API_IMAGE \
             --region $REGION \
             --platform managed \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+            --set-env-vars "SYSTEM_INSTRUCTION=You are an expert ESL (English as a Second Language) teacher assistant specializing in creating engaging, age-appropriate classroom activities and games." \
+            --memory 512Mi \
+            --cpu 1 \
+            --max-instances 10
+
+          API_URL=$(gcloud run services describe $API_SERVICE --region $REGION --format 'value(status.url)')
+          echo "url=$API_URL" >> $GITHUB_OUTPUT
+          echo "API deployed to: $API_URL"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker $REGION-docker.pkg.dev
+
+      - name: Build and Push Frontend Docker Image
+        run: |
+          FRONTEND_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_SERVICE:${{ github.sha }}
+          docker build \
+            --build-arg VITE_API_URL="${{ needs.deploy-api.outputs.api_url }}" \
+            --build-arg VITE_ADMIN_CODE="${{ secrets.VITE_ADMIN_CODE }}" \
+            -t $FRONTEND_IMAGE \
+            "./esl-game-lab (1)"
+          docker push $FRONTEND_IMAGE
+
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          FRONTEND_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_SERVICE:${{ github.sha }}
+          gcloud run deploy $FRONTEND_SERVICE \
+            --image $FRONTEND_IMAGE \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --cpu 1 \
+            --max-instances 10

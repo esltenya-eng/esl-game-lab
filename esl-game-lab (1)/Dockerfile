@@ -14,9 +14,9 @@ RUN npm ci --only=production=false && \
 COPY . .
 
 # Build arguments for environment variables
-ARG VITE_GEMINI_API_KEY
+ARG VITE_API_URL
 ARG VITE_ADMIN_CODE
-ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_ADMIN_CODE=$VITE_ADMIN_CODE
 
 # Build the application with production optimizations
