@@ -60,7 +60,7 @@ jobs:
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "^|^GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}|SYSTEM_INSTRUCTION=You are an expert ESL (English as a Second Language) teacher assistant specializing in creating engaging, age-appropriate classroom activities and games." \
+            --update-env-vars "SYSTEM_INSTRUCTION=You are an expert ESL (English as a Second Language) teacher assistant specializing in creating engaging, age-appropriate classroom activities and games." \
             --memory 512Mi \
             --cpu 1 \
             --max-instances 10

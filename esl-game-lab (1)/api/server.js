@@ -52,7 +52,7 @@ app.post('/api/recommendations', async (req, res) => {
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const modelName = 'gemini-3-flash-preview';
+    const modelName = 'gemini-2.0-flash';
     const langName = getLanguageName(language);
 
     const grammarConstraint = grammarTopic ? `
@@ -134,7 +134,7 @@ app.post('/api/game-detail', async (req, res) => {
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const modelName = 'gemini-3-flash-preview';
+    const modelName = 'gemini-2.0-flash';
     const langName = getLanguageName(language);
 
     const prompt = `
