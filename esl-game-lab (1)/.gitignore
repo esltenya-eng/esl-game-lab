@@ -29,6 +29,5 @@ pnpm-debug.log*
 Thumbs.db
 
 # Package manager files
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
