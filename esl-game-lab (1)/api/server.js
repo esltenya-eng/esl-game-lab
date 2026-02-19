@@ -9,7 +9,16 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ||
-  'You are an expert ESL (English as a Second Language) teacher assistant specializing in creating engaging, age-appropriate classroom activities and games.';
+  `You are the expert game engine for "ESL GAME LAB", recommending English classroom activities for elementary students.
+
+[Strict Language Rules]
+1. Game Title (game_title) & Tags (tags): ALWAYS English, regardless of UI language. NEVER translate or localize these fields.
+2. Teacher Directions (teacher_directions): ALWAYS English.
+3. Student Interactions (student_interactions): The spoken sentence MUST be English. NEVER translate it.
+   - Format: "English sentence" (Action/Context in target language if applicable)
+   - If UI language is English: English only, no parentheses.
+   - If UI language is KO/JA/ZH: Parentheses contain behavioral descriptions only (gestures, expressions, context). NO translation of the English sentence.
+4. Localization: Descriptions, How to Play, Materials, Illustration, and Caution are localized to the user's requested language.`;
 
 // Middleware
 app.use(cors());
@@ -71,10 +80,12 @@ app.post('/api/recommendations', async (req, res) => {
       - Filters: ${JSON.stringify(filters)}
       - Grammar Topic: ${grammarTopic || 'None'}
       ${grammarConstraint}
+      - CRITICAL: 'game_title' MUST ALWAYS be in English. NEVER localize or translate the game title.
+      - CRITICAL: Every item in 'tags' MUST ALWAYS be in English. NEVER localize or translate tags.
       - IMPORTANT: 'tags' MUST have 4 to 7 items.
       - IMPORTANT: 'summary_en' MUST ALWAYS be in English.
       - IMPORTANT: 'summary_localized' MUST ALWAYS be in ${langName}.
-      - All other descriptive fields should be in: ${langName}
+      - Only 'summary_localized' and other non-title descriptive fields should be in: ${langName}
       - Exclude: ${excludedGames.join(', ')}
       - Search Query: ${searchQuery || 'None'}
 
@@ -145,7 +156,9 @@ app.post('/api/game-detail', async (req, res) => {
       Target Level: ${filters.level.join(', ')}
 
       STRICT CONTENT RULES:
-      - Localize everything EXCEPT game_title, tags, and teacher_directions to ${langName}.
+      - Localize everything EXCEPT game_title, tags, teacher_directions, and student_interactions to ${langName}.
+      - CRITICAL: 'game_title' MUST ALWAYS be in English. NEVER localize or translate.
+      - CRITICAL: All items in 'tags' MUST ALWAYS be in English. NEVER localize or translate.
       - Include a colorful emoji ('icon') that represents the game's theme perfectly.
       - 'tags' MUST have 4 to 7 items.
       - 'illustration' MUST be 2-3 plain descriptive sentences (written in ${langName}) that paint a specific, concrete picture of the classroom during this activity: where students are positioned, what materials they are holding, what a typical student-to-student exchange physically looks like, and what the teacher is doing. Focus on observable, physical details — NOT vague emotional atmosphere. Do NOT write filler sentences like "laughter fills the room", "everyone is happily participating", or any sentence that could apply to any activity. Do NOT include any URLs, image links, markdown syntax, or special characters. Plain prose only.
@@ -165,12 +178,14 @@ app.post('/api/game-detail', async (req, res) => {
            Example: "Once you've gathered responses from at least four classmates, analyze which answers were most common and prepare to share your findings."
 
       STUDENT INTERACTIONS — CRITICAL RULES:
-      1. MINIMUM: student_interactions MUST contain at least 3 items. An empty array is NOT acceptable.
-      2. CONTENT: Each item MUST be an actual sentence a student would say during the game — not a description of what students do.
+      1. LANGUAGE: The spoken sentence in each interaction MUST ALWAYS be in English, regardless of UI language. NEVER translate the English sentence.
+      2. MINIMUM: student_interactions MUST contain at least 3 items. An empty array is NOT acceptable.
+      3. CONTENT: Each item MUST be an actual English sentence a student would say during the game — not a description of what students do.
          - WRONG: "Students ask each other about their favorites."
          - CORRECT: "What's your favorite season, and why do you like it?"
-      3. LOGICAL CONSISTENCY: Every interaction must make sense within the specific game being described.
-      4. LEVEL APPROPRIATENESS: Language must match the target level (${filters.level.join(', ')}).
+         - If UI language is KO/JA/ZH: append a short parenthetical with behavioral context in ${langName}, e.g. "(고개를 끄덕이며 다음 학생에게 몸을 돌림)". NEVER translate the English sentence into the parentheses.
+      4. LOGICAL CONSISTENCY: Every interaction must make sense within the specific game being described.
+      5. LEVEL APPROPRIATENESS: Language must match the target level (${filters.level.join(', ')}).
     `;
 
     const response = await ai.models.generateContent({
@@ -243,6 +258,5 @@ app.post('/api/image-proxy/generate', async (req, res) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ API Server running on port ${PORT}`);
-  console.log(`🔑 API Key configured: ${process.env.GEMINI_API_KEY ? 'Yes' : 'No'}`);
+  console.log(`API Server running on port ${PORT}`);
 });
