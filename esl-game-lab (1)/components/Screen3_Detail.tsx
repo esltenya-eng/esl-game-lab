@@ -154,7 +154,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
           <div className="flex flex-col gap-3 text-white">
             {directions.map((direction, idx) => (
               <div key={idx} className={`flex items-center justify-between p-4 bg-slate-800 border-2 border-slate-900 rounded-xl transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${isPlaying === idx ? 'ring-2 ring-blue-500 bg-slate-700' : ''}`}>
-                <p className="text-sm font-medium tracking-tight">"{direction}"</p>
+                <p className="text-[17px] font-medium tracking-tight">"{direction}"</p>
                 <button onClick={() => speak(direction, idx)} className="p-3 bg-[#2563eb] text-white rounded-full active:scale-90 shadow-md"><Volume2 className="w-5 h-5" /></button>
               </div>
             ))}
@@ -168,8 +168,8 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             {detail.student_interactions.map((interaction, idx) => (
               <div key={idx} className="flex items-start gap-5">
                 <User className="w-6 h-6 md:w-8 md:h-8 shrink-0 mt-1 opacity-70" />
-                <p className="text-sm font-medium italic leading-relaxed break-keep text-left">
-                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-xs opacity-70 italic font-normal">{part}</span> : <span key={i}>{part}</span>)}
+                <p className="text-[17px] font-medium italic leading-relaxed break-keep text-left">
+                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-sm opacity-70 italic font-normal">{part}</span> : <span key={i}>{part}</span>)}
                 </p>
               </div>
             ))}
