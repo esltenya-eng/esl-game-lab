@@ -16,7 +16,11 @@ jobs:
   deploy-api:
     runs-on: ubuntu-latest
     outputs:
-      api_url: ${{ steps.deploy-api.outputs.url }}
+      api_url: ${{ steps.deploy-api.outputs.api_url }}
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -31,8 +35,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker
-        run: |
-          gcloud auth configure-docker $REGION-docker.pkg.dev
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
       - name: Create Artifact Registry Repository
         run: |
@@ -55,6 +58,7 @@ jobs:
         id: deploy-api
         run: |
           API_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_SERVICE:${{ github.sha }}
+
           gcloud run deploy $API_SERVICE \
             --image $API_IMAGE \
             --region $REGION \
@@ -62,15 +66,33 @@ jobs:
             --allow-unauthenticated \
             --memory 512Mi \
             --cpu 1 \
-            --max-instances 10
+            --min-instances 0 \
+            --max-instances 10 \
+            --port 8080 \
+            --set-env-vars NODE_ENV=production \
+            --set-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest \
+            --clear-volume-mounts \
+            --remove-labels managed-by
 
-          API_URL=$(gcloud run services describe $API_SERVICE --region $REGION --format 'value(status.url)')
-          echo "url=$API_URL" >> $GITHUB_OUTPUT
+          API_URL=$(gcloud run services describe $API_SERVICE \
+            --region $REGION \
+            --format 'value(status.url)')
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
           echo "API deployed to: $API_URL"
+
+      - name: Verify API health
+        run: |
+          sleep 10
+          curl -f "${{ steps.deploy-api.outputs.api_url }}/health" \
+            || (echo "API health check failed" && exit 1)
 
   deploy-frontend:
     runs-on: ubuntu-latest
     needs: deploy-api
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -85,8 +107,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker
-        run: |
-          gcloud auth configure-docker $REGION-docker.pkg.dev
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
       - name: Build and Push Frontend Docker Image
         run: |
@@ -99,8 +120,10 @@ jobs:
           docker push $FRONTEND_IMAGE
 
       - name: Deploy Frontend to Cloud Run
+        id: deploy-frontend
         run: |
           FRONTEND_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_SERVICE:${{ github.sha }}
+
           gcloud run deploy $FRONTEND_SERVICE \
             --image $FRONTEND_IMAGE \
             --region $REGION \
@@ -108,4 +131,23 @@ jobs:
             --allow-unauthenticated \
             --memory 512Mi \
             --cpu 1 \
-            --max-instances 10
+            --min-instances 0 \
+            --max-instances 10 \
+            --port 8080 \
+            --set-env-vars NODE_ENV=production \
+            --clear-volume-mounts \
+            --remove-labels managed-by
+
+          FRONTEND_URL=$(gcloud run services describe $FRONTEND_SERVICE \
+            --region $REGION \
+            --format 'value(status.url)')
+          echo "Frontend deployed to: $FRONTEND_URL"
+
+      - name: Verify frontend health
+        run: |
+          FRONTEND_URL=$(gcloud run services describe $FRONTEND_SERVICE \
+            --region $REGION \
+            --format 'value(status.url)')
+          sleep 10
+          curl -f "$FRONTEND_URL" \
+            || (echo "Frontend health check failed" && exit 1)
