@@ -266,19 +266,19 @@ export const Screen1_Selection: React.FC<Props> = ({
         </div>
       </div>
 
-      <div className="pt-6">
+      <div className="pt-6 flex justify-center">
         <button
           onClick={handleSearch}
           disabled={isLoading}
-          className={`w-full py-6 text-xl md:text-3xl flex items-center justify-center gap-6 border-2 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none rounded-2xl transition-all font-['Press_Start_2P'] uppercase tracking-tight ${
+          className={`w-[70%] py-5 text-base md:text-xl flex items-center justify-center gap-4 border-2 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none rounded-2xl transition-all font-['Press_Start_2P'] uppercase tracking-tight ${
             isLoading ? 'bg-slate-400 text-slate-600 cursor-not-allowed' : 'bg-[#22c55e] text-white hover:bg-[#16a34a]'
           }`}
         >
           {isLoading ? (
-            <div className="w-10 h-10 border-4 border-white border-t-transparent animate-spin rounded-full"></div>
+            <div className="w-8 h-8 border-4 border-white border-t-transparent animate-spin rounded-full"></div>
           ) : (
             <>
-              <span className="text-3xl">▶</span>
+              <span className="text-2xl">▶</span>
               <span>{t.goBtn}</span>
             </>
           )}

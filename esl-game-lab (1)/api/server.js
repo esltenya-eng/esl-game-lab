@@ -145,9 +145,27 @@ app.post('/api/game-detail', async (req, res) => {
       Target Level: ${filters.level.join(', ')}
 
       STRICT CONTENT RULES:
-      - Localize everything EXCEPT game_title, tags, and teacher_directions to ${langName}.
+      - Localize to ${langName}: illustration, materials, caution, how_to_play, student_interactions, game_description.
+      - Keep in English regardless of language: game_title, tags, teacher_directions.
       - Include a colorful emoji ('icon') that represents the game's theme perfectly.
       - 'tags' MUST have 4 to 7 items.
+
+      TEACHER DIRECTIONS — CRITICAL RULES:
+      - ALWAYS in English only. Never translate to any other language.
+      - Each item is a sentence the teacher SAYS OUT LOUD to students — a real spoken script line.
+        BAD (meta-instruction, never do this): "Explain the basic structure to students."
+        GOOD (actual speech): "OK class, today we're playing ${gameTitle}! Here's how it works..."
+      - Three levels based on the teacher's English complexity, NOT game difficulty:
+        simple: 4-5 very short basic English sentences. Easy for non-native or low-confidence English teachers.
+        medium: 5-6 natural conversational English sentences. Clear and confident.
+        complex: 6-7 fluent, detailed sentences with richer vocabulary, encouragement, and smooth transitions.
+      - Levels MUST clearly differ in length and vocabulary complexity from simple to complex.
+
+      STUDENT INTERACTIONS — CRITICAL RULES:
+      - Must be in ${langName}.
+      - Provide 6-8 example sentences students actually SAY TO EACH OTHER during the game.
+      - Write only real student speech, e.g. "Haven't you ever tried sushi?" or "I went there last summer!"
+      - Do NOT write instructions or descriptions. Write only realistic sentences a student would say in this game.
     `;
 
     const response = await ai.models.generateContent({

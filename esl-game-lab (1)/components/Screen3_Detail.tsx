@@ -104,7 +104,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             <Presentation className="w-4 h-4 mr-2" /> {t.classroomScene}
           </h2>
           <div className="w-full bg-slate-800 border-2 border-slate-900 rounded-[1.5rem] flex flex-col items-center justify-center p-6 md:p-8 space-y-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-               <p className="text-[13px] md:text-[15px] font-normal opacity-90 text-center max-w-2xl leading-relaxed italic px-2 text-white">
+               <p className="text-sm font-normal opacity-90 text-center max-w-2xl leading-relaxed italic px-2 text-white">
                    {detail.illustration}
                </p>
           </div>
@@ -115,13 +115,13 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             <div className="flex flex-col gap-3">
               <h2 className="text-[13px] font-bold font-['Press_Start_2P'] px-2 flex items-center uppercase text-[#3b82f6]"><Wrench className="w-4 h-4 mr-2" /> {t.materials}</h2>
               <div className="border-2 border-slate-900 rounded-2xl p-6 bg-slate-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-full text-white">
-                <p className="text-base md:text-lg font-medium opacity-80 leading-relaxed">{detail.materials}</p>
+                <p className="text-sm font-medium opacity-80 leading-relaxed">{detail.materials}</p>
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <h2 className="text-[13px] font-bold font-['Press_Start_2P'] px-2 flex items-center uppercase text-[#ef4444]"><AlertCircle className="w-4 h-4 mr-2" /> {t.caution}</h2>
               <div className="border-2 border-slate-900 rounded-2xl p-6 bg-red-900/10 border-red-900/50 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-full text-white">
-                <p className="text-base md:text-lg font-medium opacity-80 leading-relaxed">{detail.caution}</p>
+                <p className="text-sm font-medium opacity-80 leading-relaxed">{detail.caution}</p>
               </div>
             </div>
         </div>
@@ -134,7 +134,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
               {detail.how_to_play.map((step, idx) => (
                  <div key={idx} className="flex items-start gap-5">
                     <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-[#22c55e] text-slate-900 font-['Press_Start_2P'] text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">{idx + 1}</div>
-                    <p className="text-[13px] md:text-[15px] font-medium tracking-tight opacity-95 leading-relaxed">{step.replace(/^\d+[\.\)\-\s]+/, '').trim()}</p>
+                    <p className="text-sm font-medium tracking-tight opacity-95 leading-relaxed">{step.replace(/^\d+[\.\)\-\s]+/, '').trim()}</p>
                  </div>
               ))}
             </div>
@@ -154,7 +154,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
           <div className="flex flex-col gap-3 text-white">
             {directions.map((direction, idx) => (
               <div key={idx} className={`flex items-center justify-between p-4 bg-slate-800 border-2 border-slate-900 rounded-xl transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${isPlaying === idx ? 'ring-2 ring-blue-500 bg-slate-700' : ''}`}>
-                <p className="text-base md:text-xl font-medium tracking-tight">"{direction}"</p>
+                <p className="text-sm font-medium tracking-tight">"{direction}"</p>
                 <button onClick={() => speak(direction, idx)} className="p-3 bg-[#2563eb] text-white rounded-full active:scale-90 shadow-md"><Volume2 className="w-5 h-5" /></button>
               </div>
             ))}
@@ -168,8 +168,8 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             {detail.student_interactions.map((interaction, idx) => (
               <div key={idx} className="flex items-start gap-5">
                 <User className="w-6 h-6 md:w-8 md:h-8 shrink-0 mt-1 opacity-70" />
-                <p className="text-lg md:text-2xl font-medium italic font-['VT323'] tracking-wider leading-relaxed break-keep text-left">
-                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-[60%] opacity-70 font-sans italic font-normal">{part}</span> : <span key={i}>{part}</span>)}
+                <p className="text-sm font-medium italic leading-relaxed break-keep text-left">
+                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-[85%] opacity-70 font-normal not-italic">{part}</span> : <span key={i}>{part}</span>)}
                 </p>
               </div>
             ))}

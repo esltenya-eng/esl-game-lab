@@ -21,6 +21,3 @@ googleProvider.setCustomParameters({
   prompt: 'select_account' 
 });
 
-console.log("🔥 FIREBASE READY", {
-  projectId: firebaseConfig.projectId
-});
