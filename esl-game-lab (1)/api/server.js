@@ -8,6 +8,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ||
+  'You are an expert ESL (English as a Second Language) teacher assistant specializing in creating engaging, age-appropriate classroom activities and games.';
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -84,7 +87,7 @@ app.post('/api/recommendations', async (req, res) => {
       model: modelName,
       contents: prompt,
       config: {
-        systemInstruction: process.env.SYSTEM_INSTRUCTION || 'You are an expert ESL teacher assistant.',
+        systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -151,7 +154,7 @@ app.post('/api/game-detail', async (req, res) => {
       model: modelName,
       contents: prompt,
       config: {
-        systemInstruction: process.env.SYSTEM_INSTRUCTION || 'You are an expert ESL teacher assistant.',
+        systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
