@@ -37,6 +37,7 @@ RUN npm install -g serve@14 && \
 
 # Copy built files from builder stage
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --chown=nodejs:nodejs serve.json ./serve.json
 
 # Switch to non-root user
 USER nodejs
@@ -49,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Start the application with production-optimized settings
-CMD ["serve", "-s", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching"]
+CMD ["serve", "-s", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching", "--config", "/app/serve.json"]
