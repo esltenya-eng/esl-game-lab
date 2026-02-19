@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ ENV VITE_ADMIN_CODE=$VITE_ADMIN_CODE
 RUN npm run build
 
 # Production stage - minimal image
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
