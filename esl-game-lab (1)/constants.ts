@@ -119,9 +119,19 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, any>> = {
     grammarFocus: "Grammar Focus",
     onboardingSteps: [
       {
-        title: "The Perfect Match",
-        subtitle: "Curriculum Focused",
-        content: "Search by skill, level, or theme. Our engine finds games that fit your lesson goals instantly."
+        title: "Start Here",
+        subtitle: "Curriculum-Linked",
+        content: "Decide what to teach first. ESL Game Lab is built around the grammar elements and core topics that appear repeatedly in Korean elementary and middle school English textbooks. Select these directly, and you can connect them to your lesson without disrupting the textbook flow."
+      },
+      {
+        title: "Design It",
+        subtitle: "Lesson Builder",
+        content: "Combine activities to fit your class. You are not choosing a game — you are designing a lesson. Select the grade level, student level, class size, activity duration, and lesson purpose, and gamification-based activities that match your conditions are automatically organized."
+      },
+      {
+        title: "Run It",
+        subtitle: "Classroom-Ready",
+        content: "Make sure your lesson is running well. From the expected classroom scene to step-by-step instructions, teacher directions by level, and student responses — you can anticipate everything and run your lesson with confidence."
       }
     ],
     guide: "Guide",
@@ -210,9 +220,19 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, any>> = {
     grammarFocus: "세부 문법",
     onboardingSteps: [
       {
-        title: "완벽한 매칭",
-        subtitle: "교육과정 중심 검색",
-        content: "스킬, 레벨, 테마별로 검색하세요. 수업 목표에 딱 맞는 게임을 즉시 찾아드립니다."
+        title: "교재 연계",
+        subtitle: "무엇을 가르칠까?",
+        content: "무엇을 가르칠지부터 정하세요. ESL Game Lab은 국내 초·중등 영어 교과서와 참고서에 반복 등장하는 문법 요소와 핵심 주제를 기준으로 설계되어 있어요. 이런 요소들을 그대로 선택하면, 교재 흐름을 깨지 않고 바로 수업에 연결할 수 있어요."
+      },
+      {
+        title: "레슨 설계",
+        subtitle: "활동을 조합하세요",
+        content: "수업 상황에 맞게 활동을 조합하세요. 게임을 고르는 게 아니라, 레슨을 설계합니다. 학년, 레벨, 인원, 활동 시간, 수업 목적을 선택하면 조건에 맞는 게이미피케이션 기반 활동이 자동으로 정리됩니다."
+      },
+      {
+        title: "수업 완성",
+        subtitle: "교실 실행 가이드",
+        content: "수업이 잘 굴러가고 있는지 확인하세요. 기대되는 교실 수업 장면부터 자세한 진행 방법, 학급 레벨에 따른 교사 지시어에 학생 반응까지 예상하고 수업을 진행할 수 있습니다."
       }
     ],
     guide: "가이드",
@@ -296,9 +316,19 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, any>> = {
     grammarFocus: "文法詳細",
     onboardingSteps: [
       {
-        title: "パーフェクトマッチ",
-        subtitle: "目標에合わせた検索",
-        content: "スキルやレベル別に検索。授業の目標에 최적의 게임을 곧 찾을 수 있습니다."
+        title: "まず確認",
+        subtitle: "カリキュラム連携",
+        content: "まず何を教えるかを決めましょう。ESL Game Labは、小・中学校の英語教科書や参考書に繰り返し登場する文法要素とテーマを基準に設計されています。これらの要素をそのまま選択すれば、教材の流れを壊さずに授業にそのまま活かせます。"
+      },
+      {
+        title: "設計する",
+        subtitle: "授業の組み立て",
+        content: "授業に合わせてアクティビティを組み合わせましょう。ゲームを選ぶのではなく、レッスンを設計します。学年、レベル、人数、活動時間、授業目的を選択すると、条件に合ったゲーミフィケーションベースの活動が自動的に整理されます。"
+      },
+      {
+        title: "授業完成",
+        subtitle: "実践ガイド",
+        content: "授業がうまく進んでいるか確認しましょう。期待される教室の様子から詳しい進め方、クラスレベルに応じた教師の指示、生徒の反応まで予測して、自信を持って授業を進められます。"
       }
     ],
     guide: "ガイド",
@@ -375,6 +405,23 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, any>> = {
     signUp: "注册",
     signOut: "注销",
     grammarFocus: "语法细分",
+    onboardingSteps: [
+      {
+        title: "先确定目标",
+        subtitle: "课程连接设计",
+        content: "先确定要教什么。ESL Game Lab以小初中英语教材和参考书中反复出现的语法要素和核心主题为基准设计。直接选择这些要素，就能不打乱教材流程，直接与课堂连接。"
+      },
+      {
+        title: "设计课程",
+        subtitle: "活动组合搭配",
+        content: "根据课堂情况组合活动。这不是在选游戏，而是在设计课程。选择年级、水平、人数、活动时间和教学目的，符合条件的游戏化活动会自动整理出来。"
+      },
+      {
+        title: "完成课堂",
+        subtitle: "课堂执行指南",
+        content: "确认课堂是否顺利进行。从预期的课堂场景到详细的进行方法，从按班级水平划分的教师指令到学生反应，都可以提前预测并自信地开展教学。"
+      }
+    ],
     guide: "指南",
     blog: "博客",
     finish: "完成",

@@ -148,7 +148,7 @@ app.post('/api/game-detail', async (req, res) => {
       - Localize everything EXCEPT game_title, tags, and teacher_directions to ${langName}.
       - Include a colorful emoji ('icon') that represents the game's theme perfectly.
       - 'tags' MUST have 4 to 7 items.
-      - 'illustration' MUST be 2-3 plain descriptive sentences (written in ${langName}) that paint a vivid picture of what the classroom looks like while this activity is in progress — who is doing what, the energy in the room, how students are interacting. Do NOT include any URLs, image links, markdown syntax, or special characters of any kind. Plain prose only.
+      - 'illustration' MUST be 2-3 plain descriptive sentences (written in ${langName}) that paint a specific, concrete picture of the classroom during this activity: where students are positioned, what materials they are holding, what a typical student-to-student exchange physically looks like, and what the teacher is doing. Focus on observable, physical details — NOT vague emotional atmosphere. Do NOT write filler sentences like "laughter fills the room", "everyone is happily participating", or any sentence that could apply to any activity. Do NOT include any URLs, image links, markdown syntax, or special characters. Plain prose only.
 
       TEACHER DIRECTIONS — CRITICAL RULES (violations are unacceptable):
       1. LANGUAGE: teacher_directions MUST ALWAYS be written in English regardless of any other language setting.
