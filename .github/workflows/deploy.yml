@@ -59,6 +59,12 @@ jobs:
         run: |
           API_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_SERVICE:${{ github.sha }}
 
+          # Strip any pre-existing Secret Manager binding first (no-op if absent)
+          gcloud run services update $API_SERVICE \
+            --region $REGION \
+            --remove-secrets GEMINI_API_KEY \
+            || true
+
           gcloud run deploy $API_SERVICE \
             --image $API_IMAGE \
             --region $REGION \
@@ -70,7 +76,6 @@ jobs:
             --max-instances 10 \
             --port 8080 \
             --set-env-vars "NODE_ENV=production,GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
-            --remove-secrets GEMINI_API_KEY \
             --clear-volume-mounts \
             --remove-labels managed-by
 
