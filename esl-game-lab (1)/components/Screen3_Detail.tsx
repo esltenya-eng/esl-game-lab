@@ -88,7 +88,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             {/* 해시태그 한 줄 배치 최적화 */}
             <div className="flex items-center justify-center flex-wrap gap-1.5 md:gap-2 px-4">
                 {detail.tags.map((tag, idx) => (
-                    <span key={idx} className="px-3 py-1 text-[10px] md:text-sm font-bold rounded-full border-2 border-[#4ade80] text-[#4ade80] bg-green-900/20 uppercase tracking-tight whitespace-nowrap">
+                    <span key={idx} className="px-3 py-1 text-sm font-bold rounded-full border-2 border-[#4ade80] text-[#4ade80] bg-green-900/20 uppercase tracking-tight whitespace-nowrap">
                         #{tag}
                     </span>
                 ))}
@@ -168,8 +168,8 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             {detail.student_interactions.map((interaction, idx) => (
               <div key={idx} className="flex items-start gap-5">
                 <User className="w-6 h-6 md:w-8 md:h-8 shrink-0 mt-1 opacity-70" />
-                <p className="text-sm font-medium italic font-['VT323'] tracking-wider leading-relaxed break-keep text-left">
-                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-[60%] opacity-70 font-sans italic font-normal">{part}</span> : <span key={i}>{part}</span>)}
+                <p className="text-sm font-medium italic leading-relaxed break-keep text-left">
+                    {interaction.split(/(\([^)]+\))/g).map((part, i) => part.startsWith('(') && part.endsWith(')') ? <span key={i} className="text-xs opacity-70 italic font-normal">{part}</span> : <span key={i}>{part}</span>)}
                 </p>
               </div>
             ))}
