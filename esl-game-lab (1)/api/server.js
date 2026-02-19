@@ -148,6 +148,28 @@ app.post('/api/game-detail', async (req, res) => {
       - Localize everything EXCEPT game_title, tags, and teacher_directions to ${langName}.
       - Include a colorful emoji ('icon') that represents the game's theme perfectly.
       - 'tags' MUST have 4 to 7 items.
+
+      TEACHER DIRECTIONS — CRITICAL RULES (violations are unacceptable):
+      1. LANGUAGE: teacher_directions MUST ALWAYS be written in English regardless of any other language setting.
+      2. CONTENT — WHAT, NOT HOW: Each direction MUST be the EXACT WORDS the teacher says out loud to students during the activity.
+         - WRONG (meta-instruction to teacher): "Tell students to find a partner and practice vocabulary."
+         - CORRECT (actual teacher speech): "Find a partner and take turns using the words from today's lesson."
+         - Write as if the teacher is speaking directly to the class right now.
+      3. COMPLEXITY BY LEVEL:
+         - simple: Very short sentences (≤8 words each). Basic everyday vocabulary only. One action per sentence. No subordinate clauses.
+           Example: "Stand up. Find a partner. Ask your question."
+         - medium: Complete sentences (≤15 words). Moderate vocabulary. Can link two related actions with 'and' or 'then'.
+           Example: "Walk around the room and ask three different classmates the question on your card."
+         - complex: Elaborate sentences with conditional structures, academic vocabulary, and dependent clauses (≤25 words). Can include nuanced task instructions.
+           Example: "Once you've gathered responses from at least four classmates, analyze which answers were most common and prepare to share your findings."
+
+      STUDENT INTERACTIONS — CRITICAL RULES:
+      1. MINIMUM: student_interactions MUST contain at least 3 items. An empty array is NOT acceptable.
+      2. CONTENT: Each item MUST be an actual sentence a student would say during the game — not a description of what students do.
+         - WRONG: "Students ask each other about their favorites."
+         - CORRECT: "What's your favorite season, and why do you like it?"
+      3. LOGICAL CONSISTENCY: Every interaction must make sense within the specific game being described.
+      4. LEVEL APPROPRIATENESS: Language must match the target level (${filters.level.join(', ')}).
     `;
 
     const response = await ai.models.generateContent({
