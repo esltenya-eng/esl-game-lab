@@ -158,11 +158,11 @@ export const Screen2_List: React.FC<Props> = ({
                             {displayRank}
                         </div>
                         <div className="flex-1 space-y-1">
-                            <h3 className="text-base md:text-xl font-black font-['Press_Start_2P'] uppercase text-[#4ade80] leading-tight line-clamp-1">{game.game_title}</h3>
+                            <h3 className={`text-base md:text-xl font-black ${lang === 'en' ? "font-['Press_Start_2P'] uppercase" : "font-sans"} text-[#4ade80] leading-tight line-clamp-1`}>{game.game_title}</h3>
                             <p className={`text-sm md:text-base font-medium line-clamp-2 leading-snug ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{game.summary_localized || game.summary_en}</p>
                             <div className="flex flex-wrap gap-2 pt-2">
                                 {game.tags.map((tag, idx) => (
-                                    <span key={idx} className="text-sm md:text-base px-3 py-0.5 rounded-full border border-[#4ade80] bg-green-900/10 text-[#4ade80] font-medium uppercase font-['VT323']">#{tag}</span>
+                                    <span key={idx} className={`text-sm md:text-base px-3 py-0.5 rounded-full border border-[#4ade80] bg-green-900/10 text-[#4ade80] font-medium uppercase ${lang === 'en' ? "font-['VT323']" : "font-sans"}`}>#{tag}</span>
                                 ))}
                             </div>
                         </div>

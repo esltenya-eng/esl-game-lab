@@ -82,7 +82,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
 
         {/* Section 1: Title & Tags - Further reduced font size and weight to satisfy pressure reduction */}
         <div className="text-center relative px-2">
-            <h1 className="text-lg md:text-4xl font-semibold font-['Press_Start_2P'] uppercase text-[#facc15] leading-normal mb-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] tracking-tighter truncate whitespace-nowrap overflow-hidden">
+            <h1 className={`text-lg md:text-4xl font-semibold ${settings.language === 'en' ? "font-['Press_Start_2P'] uppercase" : "font-bold font-sans"} text-[#facc15] leading-normal mb-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] tracking-tighter truncate whitespace-nowrap overflow-hidden`}>
                 {detail.game_title}
             </h1>
             {/* 해시태그 한 줄 배치 최적화 */}
