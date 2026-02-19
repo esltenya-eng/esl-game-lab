@@ -30,9 +30,6 @@ import { useUserStore } from './hooks/useUserStore';
 import { useGameEngine } from './hooks/useGameEngine';
 
 const App: React.FC = () => {
-  useEffect(() => {
-    console.log("%cESL GAME LAB — FEB25_LOCKED", "color: #00ff99; font-weight: bold; font-size: 14px; background: #051a0d; padding: 4px 8px; border-radius: 4px;");
-  }, []);
 
   const { currentScreen, navigateTo, goBack, resetToHome } = useAppFlow(AppScreen.SELECTION);
   const { 

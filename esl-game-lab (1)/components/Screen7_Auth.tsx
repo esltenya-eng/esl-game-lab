@@ -72,22 +72,37 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
             await signInWithEmailAndPassword(auth, email, password);
         }
     } catch (err: any) {
-        setError({ code: err.code, message: err.message });
+        setError({ code: err.code, message: getFriendlyErrorMessage(err.code) });
         setIsProcessing(false);
     }
+  };
+
+  const getFriendlyErrorMessage = (code: string): string => {
+    const messages: Record<string, string> = {
+      'auth/user-not-found': 'No account found with this email.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/email-already-in-use': 'This email is already registered. Try logging in.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/weak-password': 'Password must be at least 6 characters.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+      'auth/network-request-failed': 'Network error. Please check your connection.',
+      'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+      'auth/cancelled-popup-request': 'Sign-in was cancelled.',
+      'auth/invalid-credential': 'Invalid email or password.',
+    };
+    return messages[code] || 'Sign-in failed. Please try again.';
   };
 
   const handleGoogleLogin = async () => {
     setError(null);
     setIsProcessing(true);
-    
+
     try {
         await signInWithGoogle();
     } catch (err: any) {
-        console.error("Auth Error:", err.code, err.message);
-        setError({ 
-            code: err.code, 
-            message: err.message 
+        setError({
+            code: err.code,
+            message: getFriendlyErrorMessage(err.code)
         });
         setIsProcessing(false);
     }
@@ -116,7 +131,7 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
         }, { merge: true });
 
     } catch (err: any) {
-        setError({ code: err.code, message: err.message });
+        setError({ code: err.code, message: getFriendlyErrorMessage(err.code) });
         if (err.code === 'auth/email-already-in-use') {
             setStep('credentials');
         }
