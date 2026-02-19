@@ -69,8 +69,8 @@ jobs:
             --min-instances 0 \
             --max-instances 10 \
             --port 8080 \
-            --set-env-vars NODE_ENV=production \
-            --set-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest \
+            --set-env-vars "NODE_ENV=production,GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+            --remove-secrets GEMINI_API_KEY \
             --clear-volume-mounts \
             --remove-labels managed-by
 
