@@ -48,7 +48,7 @@ gcloud iam service-accounts keys create key.json \
 # Create repository for Docker images
 gcloud artifacts repositories create esl-game-lab \
   --repository-format=docker \
-  --location=us-central1 \
+  --location=us-west1 \
   --description="ESL Game Lab Docker images"
 ```
 
@@ -63,10 +63,18 @@ Add these secrets:
 | `GCP_PROJECT_ID` | Your Google Cloud Project ID | Found in GCP Console |
 | `GCP_SA_KEY` | Service account JSON key | Content of `key.json` from step 1 |
 | `GEMINI_API_KEY` | Your Gemini API key | From Google AI Studio |
+| `VITE_ADMIN_CODE` | Admin access code for export page | Choose a secure string |
+| `VITE_FIREBASE_API_KEY` | Firebase Web API Key | Firebase Console → Project Settings |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Auth Domain | Firebase Console → Project Settings |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase Project ID | Firebase Console → Project Settings |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Storage Bucket | Firebase Console → Project Settings |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Firebase Console → Project Settings |
+| `VITE_FIREBASE_APP_ID` | Firebase App ID | Firebase Console → Project Settings |
 
 **Important**:
 - For `GCP_SA_KEY`, paste the **entire content** of the `key.json` file
 - Keep the `key.json` file secure and delete it after adding to GitHub
+- All `VITE_FIREBASE_*` values come from Firebase Console → Project Settings → Your apps → Web app config
 
 ### 4. Create Secret in Google Cloud Secret Manager (for runtime)
 
@@ -84,9 +92,9 @@ gcloud secrets add-iam-policy-binding GEMINI_API_KEY \
 
 ### 5. Update Workflow Configuration (if needed)
 
-If you want to change deployment settings, edit `.github/workflows/deploy-to-cloud-run.yml`:
+If you want to change deployment settings, edit `.github/workflows/deploy.yml`:
 
-- **Region**: Default is `us-central1` (change in `env.REGION`)
+- **Region**: Default is `us-west1` (change in `env.REGION`)
 - **Memory**: Default is `512Mi` (change in `--memory` flag)
 - **CPU**: Default is `1` (change in `--cpu` flag)
 - **Scaling**: Min 0, Max 10 instances (change `--min-instances` and `--max-instances`)
@@ -99,14 +107,14 @@ To use `esl-game-lab.com`:
 # Map your domain to Cloud Run
 gcloud run services update esl-game-lab \
   --platform managed \
-  --region us-central1 \
+  --region us-west1 \
   --set-env-vars="DOMAIN=esl-game-lab.com"
 
 # Add domain mapping
 gcloud run domain-mappings create \
   --service esl-game-lab \
   --domain esl-game-lab.com \
-  --region us-central1
+  --region us-west1
 
 # Follow DNS instructions provided by the command above
 ```
@@ -141,7 +149,7 @@ You can also trigger deployment manually:
 
 ## Monitoring & Logs
 
-- **Cloud Run logs**: `gcloud run services logs read esl-game-lab --region=us-central1`
+- **Cloud Run logs**: `gcloud run services logs read esl-game-lab --region=us-west1`
 - **Deployment status**: Check the Actions tab in GitHub
 - **Cloud Console**: https://console.cloud.google.com/run
 
