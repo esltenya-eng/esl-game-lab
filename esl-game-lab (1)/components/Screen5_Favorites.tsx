@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { GameRecommendation, AppSettings } from '../types';
-import { ArrowLeft, Heart, History, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, History, Home, Trash2 } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 
 interface Props {
@@ -22,6 +22,7 @@ export const Screen5_Favorites: React.FC<Props> = ({
   onSelectGame,
   onRemoveFavorite,
   onBack,
+  onGoHome,
   settings,
 }) => {
   const t = TRANSLATIONS[settings.language];
@@ -39,11 +40,9 @@ export const Screen5_Favorites: React.FC<Props> = ({
               <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-            <h2 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
-                {t.favorites}
-            </h2>
-          </div>
+          <button onClick={onGoHome} className="absolute left-1/2 -translate-x-1/2 w-12 h-12 flex items-center justify-center bg-[#2563eb] text-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5" title="Home">
+              <Home className="w-5 h-5" />
+          </button>
 
           <div className="w-12 flex justify-end">
             <Heart className={`w-6 h-6 ${isDark ? 'text-yellow-400' : 'text-slate-800'}`} />

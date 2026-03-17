@@ -113,10 +113,13 @@ export const useGameEngine = (language: SupportedLanguage) => {
         }
       }
 
-      setRecommendations(prev => append ? [...prev, ...validatedPool] : validatedPool);
+      setRecommendations(prev => {
+        const merged = append ? [...prev, ...validatedPool] : validatedPool;
+        localStorage.setItem(CACHE_KEYS.GAMES_CACHE, JSON.stringify(merged.slice(0, 30)));
+        return merged;
+      });
       setFilters(newFilters);
       localStorage.setItem(CACHE_KEYS.FILTERS, JSON.stringify(newFilters));
-      localStorage.setItem(CACHE_KEYS.GAMES_CACHE, JSON.stringify(validatedPool.slice(0, 30)));
 
       setMilestone(100);
       setIsAppending(false);
