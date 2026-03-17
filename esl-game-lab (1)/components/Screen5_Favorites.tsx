@@ -24,6 +24,8 @@ export const Screen5_Favorites: React.FC<Props> = ({
   onBack,
   onGoHome,
   settings,
+  onOpenSettings,
+  onOpenTools,
 }) => {
   const t = TRANSLATIONS[settings.language];
   const isDark = settings.darkMode;
