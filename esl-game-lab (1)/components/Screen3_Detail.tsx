@@ -93,7 +93,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
                     </span>
                 ))}
             </div>
-            <button onClick={() => toggleFavorite(detail as any)} className="absolute -top-4 right-0 p-3 border-2 border-slate-900 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-slate-800">
+            <button onClick={() => toggleFavorite({ id: detail.game_title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'), ranking: 0, game_title: detail.game_title, tags: detail.tags, thumbnail_image: '', summary_en: detail.game_description || '', icon: detail.icon })} className="absolute -top-4 right-0 p-3 border-2 border-slate-900 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-slate-800">
                 <Heart className={`w-7 h-7 ${isFavorite ? 'fill-[#ef4444] text-[#ef4444]' : 'text-slate-400'}`} />
             </button>
         </div>

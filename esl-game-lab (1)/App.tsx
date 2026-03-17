@@ -89,7 +89,10 @@ const App: React.FC = () => {
     await getGameDetail(game, currentFilters);
   }, [addToHistory, getGameDetail, filters, navigateTo]);
 
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
+
   const handleOpenAuth = (mode: 'login' | 'signup') => {
+    setAuthMode(mode);
     navigateTo(AppScreen.AUTH);
   };
 
@@ -158,7 +161,7 @@ const App: React.FC = () => {
       case AppScreen.CONTACT:
         return <Screen6_Contact onBack={goBack} onGoHome={resetToHome} settings={settings} user={currentUser} />;
       case AppScreen.AUTH:
-        return <Screen7_Auth onBack={goBack} onLoginSuccess={() => goBack()} settings={settings} onNavigate={navigateTo} />;
+        return <Screen7_Auth onBack={goBack} onLoginSuccess={() => goBack()} settings={settings} onNavigate={navigateTo} defaultMode={authMode} />;
       case AppScreen.PRIVACY:
         return <Screen8_PrivacyPolicy onBack={goBack} settings={settings} />;
       case AppScreen.TERMS:
