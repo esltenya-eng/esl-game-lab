@@ -7,7 +7,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: us-west1
+  REGION: europe-west1
   REPOSITORY: esl-game-lab
   API_SERVICE: esl-game-lab-api
   FRONTEND_SERVICE: esl-game-lab
@@ -59,7 +59,6 @@ jobs:
         run: |
           API_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_SERVICE:${{ github.sha }}
 
-          # Strip any pre-existing Secret Manager binding first (no-op if absent)
           gcloud run services update $API_SERVICE \
             --region $REGION \
             --remove-secrets GEMINI_API_KEY \
@@ -75,7 +74,7 @@ jobs:
             --min-instances 0 \
             --max-instances 10 \
             --port 8080 \
-            --set-env-vars "NODE_ENV=production,GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+            --set-env-vars "NODE_ENV=production,GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }}" \
             --clear-volume-mounts \
             --remove-labels managed-by
 
