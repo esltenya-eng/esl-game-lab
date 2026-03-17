@@ -152,7 +152,7 @@ export const Screen2_List: React.FC<Props> = ({
         {recommendations.map((game, index) => {
             const displayRank = index + 1;
             return (
-                <div key={game.id + index} onClick={() => onSelectGame(game)} className={`w-full p-5 md:p-6 border-2 border-slate-900 rounded-[1.5rem] relative cursor-pointer transition-all hover:-translate-y-1.5 ${isDark ? 'bg-slate-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]' : 'bg-white shadow-[6px_6px_0px_0px_rgba(15,23,42,0.1)]'}`}>
+                <div key={game.id} onClick={() => onSelectGame(game)} className={`w-full p-5 md:p-6 border-2 border-slate-900 rounded-[1.5rem] relative cursor-pointer transition-all hover:-translate-y-1.5 ${isDark ? 'bg-slate-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]' : 'bg-white shadow-[6px_6px_0px_0px_rgba(15,23,42,0.1)]'}`}>
                     <div className="flex items-start gap-4 md:gap-6 pr-10">
                         <div className={`w-10 h-10 flex-shrink-0 flex items-center justify-center border-2 border-slate-900 rounded-xl font-['Press_Start_2P'] text-[12px] ${displayRank <= 3 ? 'bg-[#facc15] text-slate-900' : 'bg-[#334155] text-white'}`}>
                             {displayRank}
