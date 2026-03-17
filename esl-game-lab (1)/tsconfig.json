@@ -21,7 +21,10 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js": ["./node_modules/firebase/app"],
+      "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js": ["./node_modules/firebase/auth"],
+      "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js": ["./node_modules/firebase/firestore"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

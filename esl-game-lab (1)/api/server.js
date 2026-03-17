@@ -5,6 +5,13 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 dotenv.config();
 
+// Sanitize user-supplied strings before interpolating into AI prompts.
+// Strips newlines and backticks (the primary prompt-injection vectors) and enforces length limits.
+const sanitizeInput = (str, maxLen = 100) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[\r\n`]/g, ' ').trim().slice(0, maxLen);
+};
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -21,7 +28,12 @@ const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ||
 4. Localization: Descriptions, How to Play, Materials, Illustration, and Caution are localized to the user's requested language.`;
 
 // Middleware
-app.use(cors());
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+app.use(cors({
+  origin: allowedOrigin,
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Health check endpoint
@@ -57,7 +69,9 @@ const selectionStateSchema = {
 // POST /api/recommendations - Get game recommendations
 app.post('/api/recommendations', async (req, res) => {
   try {
-    const { filters, searchQuery, language = 'en', grammarTopic, excludedGames = [] } = req.body;
+    const { filters, searchQuery: rawQuery, language = 'en', grammarTopic: rawTopic, excludedGames = [] } = req.body;
+    const searchQuery = sanitizeInput(rawQuery, 100);
+    const grammarTopic = sanitizeInput(rawTopic, 60);
 
     if (!filters) {
       return res.status(400).json({ error: 'Filters are required' });
@@ -141,7 +155,8 @@ app.post('/api/recommendations', async (req, res) => {
 // POST /api/game-detail - Get detailed game instructions
 app.post('/api/game-detail', async (req, res) => {
   try {
-    const { gameTitle, filters, language = 'en' } = req.body;
+    const { gameTitle: rawTitle, filters, language = 'en' } = req.body;
+    const gameTitle = sanitizeInput(rawTitle, 80);
 
     if (!gameTitle || !filters) {
       return res.status(400).json({ error: 'gameTitle and filters are required' });
