@@ -176,7 +176,7 @@ const App: React.FC = () => {
         const oobCode = urlParams.get('oobCode') || '';
         return <Screen9_ResetPassword oobCode={oobCode} onSuccess={() => navigateTo(AppScreen.AUTH)} settings={settings} />;
       case AppScreen.ADMIN_EXPORT:
-        return <Screen11_AdminExport onBack={goBack} settings={settings} favorites={favorites} history={history} />;
+        return <Screen11_AdminExport onBack={goBack} settings={settings} favorites={favorites} history={history} currentUser={currentUser} />;
       case AppScreen.GAMIFICATION_GUIDE:
         return (
           <div className="eglg-guide max-w-6xl mx-auto px-4 md:px-8 lg:px-12 xl:px-16 py-8 space-y-10 animate-in fade-in duration-700 pb-40 text-slate-200 selection:bg-emerald-500 selection:text-white">

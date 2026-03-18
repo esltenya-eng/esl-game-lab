@@ -1,16 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Download, FileJson, FileSpreadsheet, Lock, AlertCircle, Database, Check, Layers, Image as ImageIcon, Loader2, Play } from 'lucide-react';
-import { AppSettings, GameRecommendation, CatalogGame } from '../types';
+import { AppSettings, GameRecommendation, CatalogGame, UserProfile } from '../types';
 import { FAMOUS_GAMES } from '../constants';
 import { fetchAllCatalogGames, getGamesWithoutImages, updateGameImage } from '../services/catalogService';
 import { generateSecureImage } from '../services/imageProxyService';
+
+// Add your Firebase UID here to grant admin access.
+// Find your UID in the Firebase Console → Authentication → Users.
+const ADMIN_UIDS: string[] = [];
 
 interface Props {
   onBack: () => void;
   settings: AppSettings;
   favorites: GameRecommendation[];
   history: GameRecommendation[];
+  currentUser: UserProfile | null;
 }
 
 type DataSource = 'Catalog' | 'Internal' | 'Favorite' | 'History';
@@ -21,9 +26,8 @@ const escapeCSV = (val: string) => {
   return `"${str}"`;
 };
 
-export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favorites, history }) => {
-  const [adminCode, setAdminCode] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favorites, history, currentUser }) => {
+  const isAuthenticated = !!(currentUser && ADMIN_UIDS.includes(currentUser.uid));
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<DataSource>('Catalog');
   const [catalogGames, setCatalogGames] = useState<CatalogGame[]>([]);
@@ -35,7 +39,6 @@ export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favori
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
   const isDark = settings.darkMode;
-  const MASTER_CODE = import.meta.env.VITE_ADMIN_CODE || '';
 
   useEffect(() => {
     const meta = document.createElement('meta');
@@ -63,16 +66,6 @@ export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favori
       console.error(e);
     } finally {
       setIsLoadingCatalog(false);
-    }
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (MASTER_CODE && adminCode.trim() === MASTER_CODE) {
-      setIsAuthenticated(true);
-      setError(null);
-    } else {
-      setError("INVALID SECURITY CODE");
     }
   };
 
@@ -180,14 +173,12 @@ export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favori
         <div className={`w-full max-w-sm p-8 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex p-4 bg-red-100 text-red-600 rounded-full border-2 border-black"><Lock className="w-10 h-10" /></div>
-            <h1 className="text-sm font-['Press_Start_2P'] uppercase text-red-500">Security Access</h1>
+            <h1 className="text-sm font-['Press_Start_2P'] uppercase text-red-500">Access Denied</h1>
+            <p className="text-xs opacity-60 font-bold">
+              {!currentUser ? 'Login required.' : 'Not authorized.'}
+            </p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <input type="password" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} className={`w-full px-4 py-4 border-2 border-black rounded-xl text-center font-mono tracking-widest text-xl focus:outline-none ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-50 text-slate-900'}`} placeholder="••••••••" autoComplete="off" />
-            {error && <p className="text-red-500 text-[9px] font-bold text-center font-['Press_Start_2P']">{error}</p>}
-            <button type="submit" className="w-full py-4 bg-red-600 text-white font-['Press_Start_2P'] text-[10px] uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5">Authorize</button>
-          </form>
-          <button onClick={onBack} className="w-full mt-6 text-[10px] opacity-40 hover:underline font-bold uppercase">Cancel</button>
+          <button onClick={onBack} className="w-full mt-2 text-[10px] opacity-40 hover:opacity-80 hover:underline font-bold uppercase transition-opacity">Go Back</button>
         </div>
       </div>
     );
@@ -211,7 +202,6 @@ export const Screen11_AdminExport: React.FC<Props> = ({ onBack, settings, favori
             </div>
           </div>
           <div className="flex gap-3">
-             <button onClick={() => setIsAuthenticated(false)} className="px-4 py-2 border-2 border-black bg-slate-200 text-slate-700 text-[9px] font-['Press_Start_2P'] uppercase rounded-lg">Lock</button>
              <button onClick={onBack} className="px-4 py-2 border-2 border-black bg-white text-black text-[9px] font-['Press_Start_2P'] uppercase rounded-lg">Exit</button>
           </div>
         </div>
