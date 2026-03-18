@@ -8,7 +8,7 @@ import { generateSecureImage } from '../services/imageProxyService';
 
 // Add your Firebase UID here to grant admin access.
 // Find your UID in the Firebase Console → Authentication → Users.
-const ADMIN_UIDS: string[] = [];
+const ADMIN_UIDS: string[] = ['y2CggMdci9gnhpsYdM0i8mzVPKw1'];
 
 interface Props {
   onBack: () => void;
