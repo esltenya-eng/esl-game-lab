@@ -12,6 +12,27 @@ const sanitizeInput = (str, maxLen = 100) => {
   return str.replace(/[\r\n`]/g, ' ').trim().slice(0, maxLen);
 };
 
+// In-memory cache for recommendations and game details
+const recommendationCache = new Map();
+const detailCache = new Map();
+const RECOMMENDATION_CACHE_TTL = 60 * 60 * 1000;  // 1 hour
+const DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000;     // 24 hours
+
+const getCachedResponse = (cache, key, ttl) => {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.ts < ttl) return entry.data;
+  return null;
+};
+
+const setCachedResponse = (cache, key, data) => {
+  cache.set(key, { data, ts: Date.now() });
+  // Evict oldest entries if cache grows too large
+  if (cache.size > 500) {
+    const oldestKey = cache.keys().next().value;
+    cache.delete(oldestKey);
+  }
+};
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -53,19 +74,6 @@ const getLanguageName = (code) => {
 
 const slugify = (text) => text.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
-const selectionStateSchema = {
-  type: Type.OBJECT,
-  properties: {
-    skill: { type: Type.ARRAY, items: { type: Type.STRING } },
-    level: { type: Type.ARRAY, items: { type: Type.STRING } },
-    purpose: { type: Type.ARRAY, items: { type: Type.STRING } },
-    classSize: { type: Type.ARRAY, items: { type: Type.STRING } },
-    time: { type: Type.ARRAY, items: { type: Type.STRING } },
-    theme: { type: Type.ARRAY, items: { type: Type.STRING } }
-  },
-  required: ["skill", "level", "purpose", "classSize", "time", "theme"]
-};
-
 // POST /api/recommendations - Get game recommendations
 app.post('/api/recommendations', async (req, res) => {
   try {
@@ -77,36 +85,46 @@ app.post('/api/recommendations', async (req, res) => {
       return res.status(400).json({ error: 'Filters are required' });
     }
 
+    // Check cache (excludedGames intentionally excluded from cache key so exclusions are applied)
+    const cacheKey = JSON.stringify({ filters, searchQuery, language, grammarTopic });
+    const cached = getCachedResponse(recommendationCache, cacheKey, RECOMMENDATION_CACHE_TTL);
+    if (cached) {
+      // Filter out previously excluded games from the cached result
+      if (excludedGames.length > 0) {
+        const filtered = {
+          ...cached,
+          recommendations: cached.recommendations.filter(r => !excludedGames.includes(r.game_title))
+        };
+        return res.json(filtered);
+      }
+      return res.json(cached);
+    }
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const modelName = 'gemini-2.0-flash';
     const langName = getLanguageName(language);
+    const isEnglish = language === 'en';
 
-    const grammarConstraint = grammarTopic ? `
-      HARD CONSTRAINT:
-      If grammarTopic is provided, you MUST return ONLY activities that primarily practice exactly this grammarTopic: "${grammarTopic}". Do NOT mix other grammar topics.
-      Every item MUST include grammar_focus equal to "${grammarTopic}" (exact string match).
-      If you cannot comply, return fewer items rather than returning mismatched items.
-    ` : "";
+    const grammarConstraint = grammarTopic
+      ? `HARD CONSTRAINT: Return ONLY activities practicing "${grammarTopic}". Every item MUST have grammar_focus="${grammarTopic}". Return fewer items rather than mismatched ones.`
+      : "";
 
     const prompt = `
-      RECOMMENDATION TASK:
-      Provide EXACTLY 15 unique English teaching game activities.
+      RECOMMENDATION TASK: Provide EXACTLY 10 unique English teaching game activities.
       - Filters: ${JSON.stringify(filters)}
       - Grammar Topic: ${grammarTopic || 'None'}
       ${grammarConstraint}
-      - CRITICAL: 'game_title' MUST ALWAYS be in English. NEVER localize or translate the game title.
-      - CRITICAL: Every item in 'tags' MUST ALWAYS be in English. NEVER localize or translate tags.
-      - IMPORTANT: 'tags' MUST have 4 to 7 items.
-      - IMPORTANT: 'summary_en' MUST ALWAYS be in English.
-      - IMPORTANT: 'summary_localized' MUST ALWAYS be in ${langName}.
-      - Only 'summary_localized' and other non-title descriptive fields should be in: ${langName}
-      - Exclude: ${excludedGames.join(', ')}
+      - game_title and all tags MUST always be in English. NEVER translate them.
+      - summary_en MUST always be in English.${isEnglish ? '' : `\n      - summary_localized MUST be in ${langName}.`}
+      - Exclude these games: ${excludedGames.length ? excludedGames.join(', ') : 'None'}
       - Search Query: ${searchQuery || 'None'}
-
-      RULES:
-      - You MUST provide exactly 15 recommendations (unless complying with grammarTopic reduces the count).
-      - Each game MUST have between 4 and 7 tags.
     `;
+
+    // For English users, only request summary_en (summary_localized would be identical)
+    const summaryProperties = isEnglish
+      ? { summary_en: { type: Type.STRING } }
+      : { summary_en: { type: Type.STRING }, summary_localized: { type: Type.STRING } };
+    const summaryRequired = isEnglish ? ['summary_en'] : ['summary_en', 'summary_localized'];
 
     const response = await ai.models.generateContent({
       model: modelName,
@@ -117,8 +135,6 @@ app.post('/api/recommendations', async (req, res) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            screen: { type: Type.INTEGER },
-            filters: selectionStateSchema,
             recommendations: {
               type: Type.ARRAY,
               items: {
@@ -127,17 +143,14 @@ app.post('/api/recommendations', async (req, res) => {
                   ranking: { type: Type.NUMBER },
                   game_title: { type: Type.STRING },
                   tags: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 4, maxItems: 7 },
-                  thumbnail_image: { type: Type.STRING },
-                  summary_en: { type: Type.STRING },
-                  summary_localized: { type: Type.STRING },
                   grammar_focus: { type: Type.STRING },
-                  grammar_focus_reason: { type: Type.STRING }
+                  ...summaryProperties
                 },
-                required: ["ranking", "game_title", "tags", "thumbnail_image", "summary_en", "summary_localized"]
+                required: ["ranking", "game_title", "tags", ...summaryRequired]
               }
             }
           },
-          required: ["screen", "filters", "recommendations"]
+          required: ["recommendations"]
         },
       },
     });
@@ -145,6 +158,7 @@ app.post('/api/recommendations', async (req, res) => {
     const parsed = JSON.parse(response.text);
     parsed.recommendations = parsed.recommendations.map(r => ({ ...r, id: slugify(r.game_title) }));
 
+    setCachedResponse(recommendationCache, cacheKey, parsed);
     res.json(parsed);
   } catch (error) {
     console.error('Error in /api/recommendations:', error);
@@ -162,6 +176,11 @@ app.post('/api/game-detail', async (req, res) => {
       return res.status(400).json({ error: 'gameTitle and filters are required' });
     }
 
+    // Check cache
+    const detailCacheKey = JSON.stringify({ gameTitle, filters, language });
+    const cachedDetail = getCachedResponse(detailCache, detailCacheKey, DETAIL_CACHE_TTL);
+    if (cachedDetail) return res.json(cachedDetail);
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const modelName = 'gemini-2.0-flash';
     const langName = getLanguageName(language);
@@ -172,35 +191,26 @@ app.post('/api/game-detail', async (req, res) => {
 
       STRICT CONTENT RULES:
       - Localize everything EXCEPT game_title, tags, teacher_directions, and student_interactions to ${langName}.
-      - CRITICAL: 'game_title' MUST ALWAYS be in English. NEVER localize or translate.
-      - CRITICAL: All items in 'tags' MUST ALWAYS be in English. NEVER localize or translate.
+      - game_title and all tags MUST always be in English. NEVER translate them.
       - Include a colorful emoji ('icon') that represents the game's theme perfectly.
-      - 'tags' MUST have 4 to 7 items.
-      - 'illustration' MUST be 2-3 plain descriptive sentences (written in ${langName}) that paint a specific, concrete picture of the classroom during this activity: where students are positioned, what materials they are holding, what a typical student-to-student exchange physically looks like, and what the teacher is doing. Focus on observable, physical details — NOT vague emotional atmosphere. Do NOT write filler sentences like "laughter fills the room", "everyone is happily participating", or any sentence that could apply to any activity. Do NOT include any URLs, image links, markdown syntax, or special characters. Plain prose only.
+      - 'illustration' MUST be 2-3 plain descriptive sentences in ${langName} describing observable physical details: student positions, materials held, a typical student-to-student exchange, and the teacher's role. No emotional atmosphere, no filler, no URLs or markdown.
 
-      TEACHER DIRECTIONS — CRITICAL RULES (violations are unacceptable):
-      1. LANGUAGE: teacher_directions MUST ALWAYS be written in English regardless of any other language setting.
-      2. CONTENT — WHAT, NOT HOW: Each direction MUST be the EXACT WORDS the teacher says out loud to students during the activity.
-         - WRONG (meta-instruction to teacher): "Tell students to find a partner and practice vocabulary."
-         - CORRECT (actual teacher speech): "Find a partner and take turns using the words from today's lesson."
-         - Write as if the teacher is speaking directly to the class right now.
+      TEACHER DIRECTIONS — CRITICAL RULES:
+      1. LANGUAGE: Always English, regardless of UI language.
+      2. CONTENT: Write the EXACT WORDS the teacher says aloud — not meta-instructions.
+         - WRONG: "Tell students to find a partner."  CORRECT: "Find a partner."
       3. COMPLEXITY BY LEVEL:
-         - simple: Very short sentences (≤8 words each). Basic everyday vocabulary only. One action per sentence. No subordinate clauses.
-           Example: "Stand up. Find a partner. Ask your question."
-         - medium: Complete sentences (≤15 words). Moderate vocabulary. Can link two related actions with 'and' or 'then'.
-           Example: "Walk around the room and ask three different classmates the question on your card."
-         - complex: Elaborate sentences with conditional structures, academic vocabulary, and dependent clauses (≤25 words). Can include nuanced task instructions.
-           Example: "Once you've gathered responses from at least four classmates, analyze which answers were most common and prepare to share your findings."
+         - simple: Very short sentences (≤8 words). One action per sentence. Basic vocabulary. Example: "Stand up. Find a partner. Ask your question."
+         - medium: Complete sentences (≤15 words). Can link two actions with "and"/"then". Example: "Walk around the room and ask three classmates the question on your card."
+         - complex: Elaborate sentences (≤25 words) with conditionals and academic vocabulary. Example: "Once you've gathered responses from at least four classmates, analyze which answers were most common."
 
       STUDENT INTERACTIONS — CRITICAL RULES:
-      1. LANGUAGE: The spoken sentence in each interaction MUST ALWAYS be in English, regardless of UI language. NEVER translate the English sentence.
-      2. MINIMUM: student_interactions MUST contain at least 3 items. An empty array is NOT acceptable.
-      3. CONTENT: Each item MUST be an actual English sentence a student would say during the game — not a description of what students do.
-         - WRONG: "Students ask each other about their favorites."
-         - CORRECT: "What's your favorite season, and why do you like it?"
-         - If UI language is KO/JA/ZH: append a short parenthetical with behavioral context in ${langName}, e.g. "(고개를 끄덕이며 다음 학생에게 몸을 돌림)". NEVER translate the English sentence into the parentheses.
-      4. LOGICAL CONSISTENCY: Every interaction must make sense within the specific game being described.
-      5. LEVEL APPROPRIATENESS: Language must match the target level (${filters.level.join(', ')}).
+      1. LANGUAGE: Always English. NEVER translate the sentence.
+      2. MINIMUM: At least 3 items. Empty array is NOT acceptable.
+      3. CONTENT: Actual English sentences a student says — not descriptions of actions.
+         - WRONG: "Students ask each other."  CORRECT: "What's your favorite season?"
+         - If UI language is KO/JA/ZH: add short behavioral parenthetical in ${langName} after the English sentence. NEVER translate the English.
+      4. Every interaction must be logical for this specific game and match level (${filters.level.join(', ')}).
     `;
 
     const response = await ai.models.generateContent({
@@ -212,7 +222,6 @@ app.post('/api/game-detail', async (req, res) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            screen: { type: Type.INTEGER },
             game_title: { type: Type.STRING },
             icon: { type: Type.STRING },
             illustration: { type: Type.STRING },
@@ -238,6 +247,7 @@ app.post('/api/game-detail', async (req, res) => {
     });
 
     const parsed = JSON.parse(response.text);
+    setCachedResponse(detailCache, detailCacheKey, parsed);
     res.json(parsed);
   } catch (error) {
     console.error('Error in /api/game-detail:', error);

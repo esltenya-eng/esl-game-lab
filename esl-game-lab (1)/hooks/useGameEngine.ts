@@ -130,6 +130,11 @@ export const useGameEngine = (language: SupportedLanguage) => {
 
       setMilestone(100);
       setIsAppending(false);
+      // Safeguard: if NeedIntroCard's onAutoFinish fails to fire (e.g. suggestion null,
+      // animation glitch), force-clear loading after 500 ms so the list is never stuck.
+      setTimeout(() => {
+        if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+      }, 500);
       return true;
     } catch (e) {
       if (currentRequestId === lastRequestIdRef.current) {
@@ -165,6 +170,10 @@ export const useGameEngine = (language: SupportedLanguage) => {
           setSelectedDetail(mergedDetail);
           localStorage.setItem(CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id, JSON.stringify(mergedDetail));
           setMilestone(100);
+          // Safeguard: force-clear loading if NeedIntroCard animation doesn't fire
+          setTimeout(() => {
+            if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+          }, 500);
         }
         return true;
     } catch (e) {
