@@ -76,6 +76,7 @@ export const useGameEngine = (language: SupportedLanguage) => {
       setIsAppending(true);
     } else {
       setRecommendations([]);
+      setSelectedDetail(null);
       setLoadingSuggestion(getFallbackGame());
       setIsLoading(true);
     }
