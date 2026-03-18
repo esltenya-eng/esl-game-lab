@@ -62,6 +62,8 @@ export const useGameEngine = (language: SupportedLanguage) => {
         }
       }
       setIsBooting(false);
+      // Preload gemini service module while user reads the home screen
+      loadGeminiService();
     };
     resolveInitialState();
   }, []);
