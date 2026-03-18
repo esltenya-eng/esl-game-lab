@@ -18,6 +18,7 @@ interface Props {
 export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, settings, toggleFavorite, isFavorite, onOpenAuth }) => {
   const { currentUser, signOutUser } = useUserStore();
   const [isPlaying, setIsPlaying] = useState<number | null>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [directionLevel, setDirectionLevel] = useState<'simple' | 'medium' | 'complex'>('medium');
   const t = TRANSLATIONS[settings.language];
   const isDark = settings.darkMode;
@@ -93,9 +94,24 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
                     </span>
                 ))}
             </div>
-            <button onClick={() => toggleFavorite({ id: detail.game_title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'), ranking: 0, game_title: detail.game_title, tags: detail.tags, thumbnail_image: '', summary_en: detail.game_description || '', icon: detail.icon })} className="absolute -top-4 right-0 p-3 border-2 border-slate-900 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-slate-800">
+            <button
+              onClick={() => {
+                if (!currentUser) {
+                  setShowLoginPrompt(true);
+                  setTimeout(() => setShowLoginPrompt(false), 3000);
+                  return;
+                }
+                toggleFavorite({ id: detail.game_title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'), ranking: 0, game_title: detail.game_title, tags: detail.tags, thumbnail_image: '', summary_en: detail.game_description || '', icon: detail.icon });
+              }}
+              className="absolute -top-4 right-0 p-3 border-2 border-slate-900 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-slate-800"
+            >
                 <Heart className={`w-7 h-7 ${isFavorite ? 'fill-[#ef4444] text-[#ef4444]' : 'text-slate-400'}`} />
             </button>
+            {showLoginPrompt && (
+              <div className="absolute -top-14 right-0 bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-xl border-2 border-slate-700 shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-top-2 duration-200">
+                {t.loginToFavorite}
+              </div>
+            )}
         </div>
 
         {/* Section 2: Classroom Scene Card */}
