@@ -126,10 +126,10 @@ export const useUserStore = () => {
     setIsAuthLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      console.log("✅ Google Sign-In Success:", result.user.email);
+      // Google sign-in successful
       return result;
     } catch (error: any) {
-      console.error("❌ Google Sign-In Error:", error);
+      console.error("Google Sign-In Error:", error.code);
       throw error; // UI에서 처리하도록 에러 전파
     } finally {
       setIsAuthLoading(false);
@@ -151,12 +151,8 @@ export const useUserStore = () => {
     let isInitialLoad = true;
 
     // 1. 리다이렉트 결과 체크 (로그인 창 떴다 사라지는 문제 해결용)
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log("✅ Redirect Result Found:", result.user.email);
-      }
-    }).catch((error) => {
-      console.error("❌ Redirect Result Error:", error);
+    getRedirectResult(auth).catch((error) => {
+      console.error("Redirect Result Error:", error.code);
     });
 
     // 2. 인증 상태 리스너
@@ -169,7 +165,7 @@ export const useUserStore = () => {
           photoURL: user.photoURL,
           provider: user.providerData[0]?.providerId || 'google'
         };
-        console.log("👤 User Detected:", profile.email, profile.uid);
+        // User authenticated
         setCurrentUser(profile);
 
         // Only sync from Firestore on initial load if we don't have cached data
@@ -185,7 +181,7 @@ export const useUserStore = () => {
         }, { merge: true }).catch(err => console.error("Failed to update lastSeen:", err));
       } else {
         setCurrentUser(null);
-        console.log("👤 User Logged Out");
+        // User signed out
       }
       setIsAuthLoading(false);
       isInitialLoad = false;
