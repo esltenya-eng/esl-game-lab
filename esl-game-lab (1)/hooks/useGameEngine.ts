@@ -81,6 +81,10 @@ export const useGameEngine = (language: SupportedLanguage) => {
       setSelectedDetail(null);
       setLoadingSuggestion(getFallbackGame());
       setIsLoading(true);
+      // Yield to the browser so the loading screen is painted before any
+      // further work (microtasks from preloaded modules resolve without
+      // giving the browser a chance to paint, causing a visible freeze).
+      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
     try {
@@ -145,6 +149,7 @@ export const useGameEngine = (language: SupportedLanguage) => {
     setSelectedDetail(null);
     setLoadingSuggestion(game);
     setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     try {
         // Dynamically import gemini service only when needed
