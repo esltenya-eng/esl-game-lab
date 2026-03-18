@@ -136,16 +136,28 @@ export const NeedIntroCard: React.FC<Props> = ({
     return { emoji: getActivityEmoji(bestKey), label: (CATEGORY_DATA as any)[bestKey]?.label || defaultLabel };
   }, [suggestion, CATEGORY_DATA]);
 
+  // Hard cap: close loading screen after 45 seconds no matter what
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (!finishTriggered.current) {
+        finishTriggered.current = true;
+        onAutoFinish();
+      }
+    }, 45000);
+    return () => clearTimeout(id);
+  }, [onAutoFinish]);
+
   useEffect(() => {
     const updateProgress = () => {
       setProgress(prev => {
-        if (isReady && suggestion && !finishTriggered.current) {
+        // suggestion guard removed: close even if suggestion is null
+        if (isReady && !finishTriggered.current) {
           finishTriggered.current = true;
           setTimeout(onAutoFinish, 120);
           return 100;
         }
         if (!isReady) {
-          const increment = prev < 50 ? 0.6 : (prev < 90 ? 0.2 : 0.04);
+          const increment = prev < 40 ? 1.2 : (prev < 75 ? 0.5 : (prev < 90 ? 0.2 : 0.04));
           const next = prev + increment;
           return next >= 98 ? 98 : next;
         }
@@ -155,7 +167,7 @@ export const NeedIntroCard: React.FC<Props> = ({
     };
     requestRef.current = requestAnimationFrame(updateProgress);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [isReady, suggestion, onAutoFinish]);
+  }, [isReady, onAutoFinish]);
 
   const progressBlocks = 12;
   const activeBlocks = Math.floor((progress / 100) * progressBlocks);

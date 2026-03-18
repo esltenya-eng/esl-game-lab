@@ -89,6 +89,9 @@ const App: React.FC = () => {
     await getGameDetail(game, currentFilters);
   }, [addToHistory, getGameDetail, filters, navigateTo]);
 
+  // Stable reference prevents NeedIntroCard's useEffect from restarting on every render
+  const handleLoadingFinish = useCallback(() => setIsLoading(false), [setIsLoading]);
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
 
   const handleOpenAuth = (mode: 'login' | 'signup') => {
@@ -254,12 +257,14 @@ const App: React.FC = () => {
       </main>
 
       {isLoading && (
-        <NeedIntroCard 
-          isDark={settings.darkMode} 
-          suggestion={loadingSuggestion}
-          isReady={milestone === 100 || !!selectedDetail}
-          onAutoFinish={() => setIsLoading(false)}
-        />
+        <Suspense fallback={null}>
+          <NeedIntroCard
+            isDark={settings.darkMode}
+            suggestion={loadingSuggestion}
+            isReady={milestone === 100 || !!selectedDetail}
+            onAutoFinish={handleLoadingFinish}
+          />
+        </Suspense>
       )}
 
       {error && (
