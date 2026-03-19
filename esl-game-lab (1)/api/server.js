@@ -85,19 +85,12 @@ app.post('/api/recommendations', async (req, res) => {
       return res.status(400).json({ error: 'Filters are required' });
     }
 
-    // Check cache (excludedGames intentionally excluded from cache key so exclusions are applied)
+    // Only use cache for initial requests (no excludedGames).
+    // LOAD MORE requests must bypass the cache so Gemini generates genuinely new games.
     const cacheKey = JSON.stringify({ filters, searchQuery, language, grammarTopic });
-    const cached = getCachedResponse(recommendationCache, cacheKey, RECOMMENDATION_CACHE_TTL);
-    if (cached) {
-      // Filter out previously excluded games from the cached result
-      if (excludedGames.length > 0) {
-        const filtered = {
-          ...cached,
-          recommendations: cached.recommendations.filter(r => !excludedGames.includes(r.game_title))
-        };
-        return res.json(filtered);
-      }
-      return res.json(cached);
+    if (excludedGames.length === 0) {
+      const cached = getCachedResponse(recommendationCache, cacheKey, RECOMMENDATION_CACHE_TTL);
+      if (cached) return res.json(cached);
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

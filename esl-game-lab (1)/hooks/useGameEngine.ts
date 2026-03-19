@@ -28,6 +28,8 @@ export const useGameEngine = (language: SupportedLanguage) => {
   const [isResultIncomplete, setIsResultIncomplete] = useState(false); // 필터링 후 결과 부족 여부
   
   const lastRequestIdRef = useRef<number>(0);
+  const recommendationsRef = useRef<GameRecommendation[]>(recommendations);
+  useEffect(() => { recommendationsRef.current = recommendations; }, [recommendations]);
   const t = TRANSLATIONS[language];
 
   const getFallbackGame = useCallback((): GameRecommendation => {
@@ -91,7 +93,8 @@ export const useGameEngine = (language: SupportedLanguage) => {
       setMilestone(40);
       // Dynamically import gemini service only when needed
       const { fetchRecommendations } = await loadGeminiService();
-      const response = await fetchRecommendations(newFilters, query, language, grammarTopic);
+      const excludedGames = append ? recommendationsRef.current.map(r => r.game_title) : [];
+      const response = await fetchRecommendations(newFilters, query, language, grammarTopic, excludedGames);
 
       if (currentRequestId !== lastRequestIdRef.current) return false;
 
