@@ -1,0 +1,14 @@
+{
+  "name": "esl-game-lab-qa",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node weekly-qa.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google-cloud/logging": "^11.0.0",
+    "firebase-admin": "^12.0.0"
+  }
+}
