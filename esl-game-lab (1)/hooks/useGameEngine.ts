@@ -140,6 +140,7 @@ export const useGameEngine = (language: SupportedLanguage) => {
       }, 500);
       return true;
     } catch (e) {
+      console.error('[useGameEngine] getRecommendations failed:', e);
       if (currentRequestId === lastRequestIdRef.current) {
         setError(t.errorGeneric || "An error occurred.");
         setIsLoading(false);
@@ -180,6 +181,7 @@ export const useGameEngine = (language: SupportedLanguage) => {
         }
         return true;
     } catch (e) {
+        console.error('[useGameEngine] getGameDetail failed:', e);
         if (currentRequestId === lastRequestIdRef.current) {
           setError(t.errorGeneric || "An error occurred.");
           setIsLoading(false);

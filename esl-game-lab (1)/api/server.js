@@ -49,9 +49,16 @@ const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ||
 4. Localization: Descriptions, How to Play, Materials, Illustration, and Caution are localized to the user's requested language.`;
 
 // Middleware
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// ALLOWED_ORIGIN accepts a comma-separated list so both the custom domain
+// and the Cloud Run URL can be whitelisted without changing the image.
+const rawOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const allowedOrigins = rawOrigin.split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
-  origin: allowedOrigin,
+  origin: (origin, callback) => {
+    // Allow server-to-server / curl calls (no Origin header)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: ${origin} not in allowed list`));
+  },
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
@@ -148,7 +155,10 @@ app.post('/api/recommendations', async (req, res) => {
       },
     });
 
-    const parsed = JSON.parse(response.text);
+    const rawText = response.text;
+    if (!rawText) throw new Error('Gemini returned an empty response. The request may have been blocked by safety filters.');
+    const parsed = JSON.parse(rawText);
+    if (!Array.isArray(parsed.recommendations)) throw new Error('Gemini response missing recommendations array.');
     parsed.recommendations = parsed.recommendations.map(r => ({ ...r, id: slugify(r.game_title) }));
 
     setCachedResponse(recommendationCache, cacheKey, parsed);
@@ -239,7 +249,9 @@ app.post('/api/game-detail', async (req, res) => {
       },
     });
 
-    const parsed = JSON.parse(response.text);
+    const rawDetailText = response.text;
+    if (!rawDetailText) throw new Error('Gemini returned an empty response for game detail.');
+    const parsed = JSON.parse(rawDetailText);
     setCachedResponse(detailCache, detailCacheKey, parsed);
     res.json(parsed);
   } catch (error) {
