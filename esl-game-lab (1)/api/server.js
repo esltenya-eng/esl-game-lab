@@ -101,7 +101,7 @@ app.post('/api/recommendations', async (req, res) => {
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const modelName = 'gemini-2.0-flash';
+    const modelName = 'gemini-2.5-flash';
     const langName = getLanguageName(language);
     const isEnglish = language === 'en';
 
@@ -185,7 +185,7 @@ app.post('/api/game-detail', async (req, res) => {
     if (cachedDetail) return res.json(cachedDetail);
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const modelName = 'gemini-2.0-flash';
+    const modelName = 'gemini-2.5-flash';
     const langName = getLanguageName(language);
 
     const prompt = `
