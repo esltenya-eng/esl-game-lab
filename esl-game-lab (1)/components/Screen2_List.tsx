@@ -147,6 +147,15 @@ export const Screen2_List: React.FC<Props> = ({
         )}
       </div>
 
+      {/* 빈 결과 안내 */}
+      {!isLoading && recommendations.length === 0 && (
+        <div className={`flex flex-col items-center justify-center py-20 gap-4 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <span className="text-5xl">🎮</span>
+          <p className="font-bold text-base">{settings.language === 'ko' ? '검색 결과가 없습니다.' : settings.language === 'ja' ? '結果が見つかりません。' : settings.language === 'zh' ? '未找到结果。' : 'No results found.'}</p>
+          <p className="text-sm opacity-70">{settings.language === 'ko' ? '다른 조건으로 다시 검색해 보세요.' : settings.language === 'ja' ? '別の条件で再検索してください。' : settings.language === 'zh' ? '请尝试其他条件重新搜索。' : 'Try adjusting your filters or search query.'}</p>
+        </div>
+      )}
+
       {/* 게임 목록 */}
       <div className="flex flex-col space-y-5">
         {recommendations.map((game, index) => {

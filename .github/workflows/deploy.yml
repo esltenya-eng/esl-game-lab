@@ -150,7 +150,17 @@ jobs:
           FRONTEND_URL=$(gcloud run services describe $FRONTEND_SERVICE \
             --region $REGION \
             --format 'value(status.url)')
+          echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
           echo "Frontend deployed to: $FRONTEND_URL"
+
+      - name: Allow Cloud Run frontend URL in API CORS
+        run: |
+          FRONTEND_URL="${{ steps.deploy-frontend.outputs.frontend_url }}"
+          # Add the Cloud Run URL alongside the custom domain so direct Cloud Run
+          # access also works. Uses ^|^ delimiter to allow commas inside the value.
+          gcloud run services update $API_SERVICE \
+            --region $REGION \
+            --set-env-vars "^|^NODE_ENV=production|GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}|ALLOWED_ORIGIN=https://esl-game-lab.com,$FRONTEND_URL"
 
       - name: Verify frontend health
         run: |
