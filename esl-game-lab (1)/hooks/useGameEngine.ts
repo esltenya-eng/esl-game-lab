@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { SelectionState, GameRecommendation, GameDetail, SupportedLanguage } from '../types';
 import { TRANSLATIONS, FAMOUS_GAMES } from '../constants';
+import { getGameById, persistGameDetail } from '../services/catalogService';
 
 // Lazy load gemini service to reduce initial bundle size (saves ~263 KB!)
 const loadGeminiService = () => import('../services/geminiService');
@@ -12,6 +13,14 @@ const CACHE_KEYS = {
   DETAIL_CACHE_PREFIX: 'eslgamelab_detail_'
 };
 
+// L1 cache entry format: always includes persistedId to prove Firestore presence
+interface DetailCacheEntry {
+  detail: GameDetail;
+  persistedId: string;
+}
+
+export type ShareStatus = 'idle' | 'saving' | 'ready' | 'error';
+
 export const useGameEngine = (language: SupportedLanguage) => {
   const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]);
   const [selectedDetail, setSelectedDetail] = useState<GameDetail | null>(null);
@@ -19,14 +28,18 @@ export const useGameEngine = (language: SupportedLanguage) => {
     const saved = localStorage.getItem(CACHE_KEYS.FILTERS);
     return saved ? JSON.parse(saved) : null;
   });
-  
+
   const [isBooting, setIsBooting] = useState(true);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const [isAppending, setIsAppending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [milestone, setMilestone] = useState(0); 
-  const [isResultIncomplete, setIsResultIncomplete] = useState(false); // 필터링 후 결과 부족 여부
-  
+  const [milestone, setMilestone] = useState(0);
+  const [isResultIncomplete, setIsResultIncomplete] = useState(false);
+
+  const [shareStatus, setShareStatus] = useState<ShareStatus>('idle');
+  const [persistedGameId, setPersistedGameId] = useState<string | null>(null);
+  const [coldOpenNotFound, setColdOpenNotFound] = useState(false);
+
   const lastRequestIdRef = useRef<number>(0);
   const recommendationsRef = useRef<GameRecommendation[]>(recommendations);
   useEffect(() => { recommendationsRef.current = recommendations; }, [recommendations]);
@@ -50,25 +63,54 @@ export const useGameEngine = (language: SupportedLanguage) => {
 
   useEffect(() => {
     const resolveInitialState = async () => {
-      const hash = window.location.hash.replace('#/', '').replace('#', '');
-      const segments = hash.split('/');
-      
       const cachedGames = localStorage.getItem(CACHE_KEYS.GAMES_CACHE);
       if (cachedGames) setRecommendations(JSON.parse(cachedGames));
-
-      if (segments[0] === 'detail' && segments[1]) {
-        const gameId = segments[1];
-        const cachedDetail = localStorage.getItem(CACHE_KEYS.DETAIL_CACHE_PREFIX + gameId);
-        if (cachedDetail) {
-          setSelectedDetail(JSON.parse(cachedDetail));
-        }
-      }
       setIsBooting(false);
       // Preload gemini service module while user reads the home screen
       loadGeminiService();
     };
     resolveInitialState();
   }, []);
+
+  // Cold-open: load a game directly from Firestore by slug id.
+  // Called by App.tsx when the app mounts at /game/<id>.
+  const loadGameById = useCallback(async (id: string) => {
+    const currentRequestId = ++lastRequestIdRef.current;
+    setError(null);
+    setColdOpenNotFound(false);
+    setShareStatus('idle');
+    setPersistedGameId(null);
+
+    setSelectedDetail(null);
+    setIsLoading(true);
+    setLoadingSuggestion(getFallbackGame());
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    try {
+      const catalogGame = await getGameById(id);
+
+      if (currentRequestId !== lastRequestIdRef.current) return;
+
+      if (!catalogGame) {
+        setColdOpenNotFound(true);
+        setIsLoading(false);
+        return;
+      }
+
+      setSelectedDetail(catalogGame as GameDetail);
+      setPersistedGameId(catalogGame.id);
+      setShareStatus('ready');
+      setMilestone(100);
+      setTimeout(() => {
+        if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+      }, 500);
+    } catch {
+      if (currentRequestId === lastRequestIdRef.current) {
+        setColdOpenNotFound(true);
+        setIsLoading(false);
+      }
+    }
+  }, [getFallbackGame]);
 
   const getRecommendations = useCallback(async (newFilters: SelectionState, query: string, grammarTopic?: string, append = false) => {
     const currentRequestId = ++lastRequestIdRef.current;
@@ -103,21 +145,14 @@ export const useGameEngine = (language: SupportedLanguage) => {
         id: r.game_title.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
       }));
 
-      // ---------------------------------------------------------
-      // 후처리 검증 (Post-filtering)
-      // ---------------------------------------------------------
       if (grammarTopic) {
         const lowerTopic = grammarTopic.toLowerCase();
         validatedPool = validatedPool.filter(item => {
-          // 1차 통과: LLM이 명시적으로 표시한 grammar_focus가 일치하는가
           if (item.grammar_focus && item.grammar_focus.toLowerCase() === lowerTopic) return true;
-          
-          // 2차 통과: 요약이나 태그 내에 키워드가 직접 포함되어 있는가
           const contentBlob = `${item.summary_localized || ""} ${item.summary_en} ${item.tags.join(" ")}`.toLowerCase();
           return contentBlob.includes(lowerTopic);
         });
 
-        // 결과가 3개 미만이면 '결과 부족' 상태 활성화
         if (validatedPool.length < 3) {
           setIsResultIncomplete(true);
         }
@@ -154,6 +189,9 @@ export const useGameEngine = (language: SupportedLanguage) => {
     const currentRequestId = ++lastRequestIdRef.current;
     setError(null);
     setMilestone(20);
+    setColdOpenNotFound(false);
+    setShareStatus('idle');
+    setPersistedGameId(null);
 
     setSelectedDetail(null);
     setLoadingSuggestion(game);
@@ -161,39 +199,92 @@ export const useGameEngine = (language: SupportedLanguage) => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     try {
-        // Dynamically import gemini service only when needed
-        const { fetchGameDetail } = await loadGeminiService();
-        const detail = await fetchGameDetail(game.game_title, currentFilters, language);
-
-        if (currentRequestId === lastRequestIdRef.current) {
-          const mergedDetail: GameDetail = {
-            ...detail,
-            tags: [...game.tags]
-          };
-
-          setSelectedDetail(mergedDetail);
-          localStorage.setItem(CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id, JSON.stringify(mergedDetail));
-          setMilestone(100);
-          // Safeguard: force-clear loading if NeedIntroCard animation doesn't fire
-          setTimeout(() => {
-            if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
-          }, 500);
+      // L1: localStorage — only valid if entry includes a persistedId (guarantees Firestore presence)
+      const cachedRaw = localStorage.getItem(CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id);
+      if (cachedRaw) {
+        try {
+          const entry: DetailCacheEntry = JSON.parse(cachedRaw);
+          if (entry.detail && entry.persistedId && currentRequestId === lastRequestIdRef.current) {
+            setSelectedDetail(entry.detail);
+            setPersistedGameId(entry.persistedId);
+            setShareStatus('ready');
+            setMilestone(100);
+            setTimeout(() => {
+              if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+            }, 500);
+            return true;
+          }
+        } catch {
+          // corrupt entry — fall through to L2
         }
+      }
+
+      // L2: Firestore catalog_games
+      setMilestone(35);
+      const catalogGame = await getGameById(game.id);
+      if (catalogGame && currentRequestId === lastRequestIdRef.current) {
+        const mergedDetail: GameDetail = { ...catalogGame as GameDetail, tags: [...game.tags] };
+        setSelectedDetail(mergedDetail);
+        setPersistedGameId(catalogGame.id);
+        setShareStatus('ready');
+        // Write back to L1 in the new format
+        localStorage.setItem(
+          CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id,
+          JSON.stringify({ detail: mergedDetail, persistedId: catalogGame.id })
+        );
+        setMilestone(100);
+        setTimeout(() => {
+          if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+        }, 500);
         return true;
-    } catch (e) {
-        console.error('[useGameEngine] getGameDetail failed:', e);
-        if (currentRequestId === lastRequestIdRef.current) {
-          setError(t.errorGeneric || "An error occurred.");
-          setIsLoading(false);
+      }
+
+      // L3: API (server in-memory cache → Gemini)
+      setMilestone(50);
+      const { fetchGameDetail } = await loadGeminiService();
+      const detail = await fetchGameDetail(game.game_title, currentFilters, language);
+
+      if (currentRequestId !== lastRequestIdRef.current) return false;
+
+      const mergedDetail: GameDetail = { ...detail, tags: [...game.tags] };
+      setSelectedDetail(mergedDetail);
+      setShareStatus('saving');
+      setMilestone(100);
+      setTimeout(() => {
+        if (currentRequestId === lastRequestIdRef.current) setIsLoading(false);
+      }, 500);
+
+      // Async persist to Firestore — does not block render
+      persistGameDetail(mergedDetail).then(storedId => {
+        if (currentRequestId !== lastRequestIdRef.current) return;
+        if (storedId) {
+          setPersistedGameId(storedId);
+          setShareStatus('ready');
+          // Only write L1 after confirmed Firestore write
+          localStorage.setItem(
+            CACHE_KEYS.DETAIL_CACHE_PREFIX + game.id,
+            JSON.stringify({ detail: mergedDetail, persistedId: storedId })
+          );
+        } else {
+          setShareStatus('error');
         }
-        return false;
+      });
+
+      return true;
+    } catch (e) {
+      console.error('[useGameEngine] getGameDetail failed:', e);
+      if (currentRequestId === lastRequestIdRef.current) {
+        setError(t.errorGeneric || "An error occurred.");
+        setIsLoading(false);
+      }
+      return false;
     }
   }, [language, t.errorGeneric]);
 
   return {
     recommendations,
     selectedDetail,
-    isLoading, 
+    isLoading,
     setIsLoading,
     isBooting,
     isAppending,
@@ -201,7 +292,11 @@ export const useGameEngine = (language: SupportedLanguage) => {
     error,
     filters,
     milestone,
-    isResultIncomplete, // UI 노출용
+    isResultIncomplete,
+    shareStatus,
+    persistedGameId,
+    coldOpenNotFound,
+    loadGameById,
     getRecommendations,
     getGameDetail,
     clearError: () => setError(null)
