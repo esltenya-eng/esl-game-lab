@@ -31,17 +31,18 @@ import { useGameEngine } from './hooks/useGameEngine';
 
 const App: React.FC = () => {
 
-  const { currentScreen, navigateTo, goBack, resetToHome } = useAppFlow(AppScreen.SELECTION);
+  const { currentScreen, coldOpenGameId, navigateTo, goBack, resetToHome } = useAppFlow(AppScreen.SELECTION);
   const { 
     settings, updateSettings, favorites, toggleFavorite, removeFavorite, 
     history, addToHistory, currentUser, signOutUser
   } = useUserStore();
   
-  const { 
-    recommendations, selectedDetail, isLoading, setIsLoading, 
+  const {
+    recommendations, selectedDetail, isLoading, setIsLoading,
     isBooting, isAppending, loadingSuggestion, error, filters, milestone,
-    isResultIncomplete, 
-    getRecommendations, getGameDetail, clearError 
+    isResultIncomplete,
+    shareStatus, persistedGameId, coldOpenNotFound, loadGameById,
+    getRecommendations, getGameDetail, clearError
   } = useGameEngine(settings.language);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -73,6 +74,25 @@ const App: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Cold-open: if the app was loaded at /game/<id>, fetch that game from Firestore
+  useEffect(() => {
+    if (coldOpenGameId) {
+      loadGameById(coldOpenGameId);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // URL collision fix: if Firestore stored the game under a suffixed id (e.g. bingo-2),
+  // update the browser URL so the address bar shows the canonical shareable path.
+  useEffect(() => {
+    if (persistedGameId && currentScreen === AppScreen.DETAIL) {
+      const currentPath = window.location.pathname;
+      const expectedPath = `/game/${persistedGameId}`;
+      if (currentPath !== expectedPath) {
+        window.history.replaceState({ appNav: true, screen: AppScreen.DETAIL }, '', expectedPath);
+      }
+    }
+  }, [persistedGameId, currentScreen]);
 
   const onSearchRequested = async (selectedFilters: SelectionState, query: string, grammarTopic?: string, isAppend = false) => {
     if (!isAppend) {
@@ -156,7 +176,7 @@ const App: React.FC = () => {
       case AppScreen.LIST:
         return <Screen2_List recommendations={recommendations} filters={filters || {skill:[], level:[], purpose:[], classSize:[], time:[], theme:[]}} grammarTopic={currentGrammarTopic} onSelectGame={onGameSelected} onBack={goBack} onGoHome={resetToHome} isLoading={isLoading || isBooting} isAppending={isAppending} isResultIncomplete={isResultIncomplete} toggleFavorite={toggleFavorite} favorites={favorites} settings={settings} onUpdateList={onSearchRequested} onOpenAuth={handleOpenAuth} />;
       case AppScreen.DETAIL:
-        return <Screen3_Detail detail={selectedDetail} onBack={goBack} onGoHome={resetToHome} settings={settings} toggleFavorite={toggleFavorite} isFavorite={favorites.some(f => f.game_title === selectedDetail?.game_title)} onOpenAuth={() => handleOpenAuth('login')} />;
+        return <Screen3_Detail detail={selectedDetail} onBack={goBack} onGoHome={resetToHome} settings={settings} toggleFavorite={toggleFavorite} isFavorite={favorites.some(f => f.game_title === selectedDetail?.game_title)} onOpenAuth={() => handleOpenAuth('login')} shareStatus={shareStatus} persistedGameId={persistedGameId} isNotFound={coldOpenNotFound} />;
       case AppScreen.SETTINGS:
         return <Screen4_Settings settings={settings} onUpdateSettings={updateSettings} onBack={goBack} onGoHome={resetToHome} onOpenAuth={handleOpenAuth} onLogout={signOutUser} />;
       case AppScreen.FAVORITES:

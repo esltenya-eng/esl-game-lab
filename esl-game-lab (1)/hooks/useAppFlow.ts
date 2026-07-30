@@ -8,22 +8,48 @@ import { AppScreen } from '../types';
  * - navigateTo  → pushes a history entry so the browser back button works
  * - goBack      → pops our internal stack AND the browser entry
  * - popstate    → triggered by browser back; mirrors the stack pop
- * - replaceState on mount so the very first entry is owned by the SPA
- *   (prevents the browser from navigating away on the first back press)
+ * - Cold-open support: if the app loads at /game/<id>, currentScreen starts at
+ *   DETAIL and coldOpenGameId is set so App.tsx can fetch from Firestore.
  */
+
+const parsePath = (): { screen: AppScreen; gameId: string | null } => {
+  const path = window.location.pathname;
+  const match = path.match(/^\/game\/([^/]+)/);
+  if (match) return { screen: AppScreen.DETAIL, gameId: match[1] };
+  return { screen: AppScreen.SELECTION, gameId: null };
+};
+
 export const useAppFlow = (initialScreen: AppScreen = AppScreen.SELECTION) => {
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>(initialScreen);
-  const [params, setParams] = useState<Record<string, string>>({});
-  const [historyStack, setHistoryStack] = useState<Array<{screen: AppScreen, params: Record<string, string>}>>([
-    { screen: initialScreen, params: {} }
-  ]);
+  const parsed = parsePath();
+  const coldStartScreen = parsed.screen;
+  const coldOpenGameIdInitial = parsed.gameId;
+
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(coldStartScreen);
+  const [params, setParams] = useState<Record<string, string>>(
+    coldOpenGameIdInitial ? { id: coldOpenGameIdInitial } : {}
+  );
+  const [historyStack, setHistoryStack] = useState<Array<{screen: AppScreen, params: Record<string, string>}>>(
+    coldStartScreen === AppScreen.DETAIL && coldOpenGameIdInitial
+      ? [
+          { screen: AppScreen.SELECTION, params: {} },
+          { screen: AppScreen.DETAIL, params: { id: coldOpenGameIdInitial } }
+        ]
+      : [{ screen: initialScreen, params: {} }]
+  );
+
+  const [coldOpenGameId] = useState<string | null>(coldOpenGameIdInitial);
 
   // Prevents the popstate listener from double-handling a back triggered by goBack()
   const skipNextPopState = useRef(false);
 
   // Claim the initial browser history entry for the SPA
   useEffect(() => {
-    window.history.replaceState({ appNav: true }, '');
+    if (coldStartScreen === AppScreen.DETAIL && coldOpenGameIdInitial) {
+      // Replace with the clean game URL so the back-stack is correct
+      window.history.replaceState({ appNav: true, screen: AppScreen.DETAIL }, '', `/game/${coldOpenGameIdInitial}`);
+    } else {
+      window.history.replaceState({ appNav: true }, '', '/');
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle browser back/forward button
@@ -36,9 +62,9 @@ export const useAppFlow = (initialScreen: AppScreen = AppScreen.SELECTION) => {
       // Pop our internal stack to mirror the browser navigation
       setHistoryStack(prev => {
         if (prev.length <= 1) {
-          setCurrentScreen(initialScreen);
+          setCurrentScreen(AppScreen.SELECTION);
           setParams({});
-          return [{ screen: initialScreen, params: {} }];
+          return [{ screen: AppScreen.SELECTION, params: {} }];
         }
         const newStack = [...prev];
         newStack.pop();
@@ -51,15 +77,16 @@ export const useAppFlow = (initialScreen: AppScreen = AppScreen.SELECTION) => {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [initialScreen]);
+  }, []);
 
   const navigateTo = useCallback((screen: AppScreen, id?: string) => {
     const newParams = id ? { id } : {};
     setCurrentScreen(screen);
     setParams(newParams);
     setHistoryStack(prev => [...prev, { screen, params: newParams }]);
-    // Push to browser history so the back button navigates within the SPA
-    window.history.pushState({ appNav: true, screen, params: newParams }, '');
+
+    const url = screen === AppScreen.DETAIL && id ? `/game/${id}` : '/';
+    window.history.pushState({ appNav: true, screen, params: newParams }, '', url);
   }, []);
 
   const goBack = useCallback((e?: any) => {
@@ -71,9 +98,10 @@ export const useAppFlow = (initialScreen: AppScreen = AppScreen.SELECTION) => {
     setHistoryStack(prev => {
       if (prev.length <= 1) {
         skipNextPopState.current = false;
-        setCurrentScreen(initialScreen);
+        setCurrentScreen(AppScreen.SELECTION);
         setParams({});
-        return [{ screen: initialScreen, params: {} }];
+        window.history.replaceState({ appNav: true }, '', '/');
+        return [{ screen: AppScreen.SELECTION, params: {} }];
       }
 
       const newStack = [...prev];
@@ -88,15 +116,15 @@ export const useAppFlow = (initialScreen: AppScreen = AppScreen.SELECTION) => {
 
       return newStack;
     });
-  }, [initialScreen]);
+  }, []);
 
   const resetToHome = useCallback(() => {
     setCurrentScreen(AppScreen.SELECTION);
     setParams({});
     setHistoryStack([{ screen: AppScreen.SELECTION, params: {} }]);
     // Replace current entry so the stack is clean from the browser's perspective
-    window.history.replaceState({ appNav: true }, '');
+    window.history.replaceState({ appNav: true }, '', '/');
   }, []);
 
-  return { currentScreen, params, navigateTo, goBack, resetToHome };
+  return { currentScreen, params, coldOpenGameId, navigateTo, goBack, resetToHome };
 };

@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { GameDetail, AppSettings, GameRecommendation } from '../types';
-import { ArrowLeft, Volume2, User, AlertCircle, Wrench, ListOrdered, Heart, Minus, Plus, LogIn, Home, LogOut, UserPlus, Presentation } from 'lucide-react';
+import { ArrowLeft, Volume2, User, AlertCircle, Wrench, ListOrdered, Heart, Minus, Plus, LogIn, Home, LogOut, UserPlus, Presentation, Link, Check, Loader2 } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 import { useUserStore } from '../hooks/useUserStore';
+import { ShareStatus } from '../hooks/useGameEngine';
 
 interface Props {
   detail: GameDetail | null;
@@ -13,13 +14,20 @@ interface Props {
   toggleFavorite: (game: GameRecommendation) => void;
   isFavorite: boolean;
   onOpenAuth: (mode: 'login' | 'signup') => void;
+  shareStatus: ShareStatus;
+  persistedGameId: string | null;
+  isNotFound: boolean;
 }
 
-export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, settings, toggleFavorite, isFavorite, onOpenAuth }) => {
+export const Screen3_Detail: React.FC<Props> = ({
+  detail, onBack, onGoHome, settings, toggleFavorite, isFavorite, onOpenAuth,
+  shareStatus, persistedGameId, isNotFound
+}) => {
   const { currentUser, signOutUser } = useUserStore();
   const [isPlaying, setIsPlaying] = useState<number | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [directionLevel, setDirectionLevel] = useState<'simple' | 'medium' | 'complex'>('medium');
+  const [copied, setCopied] = useState(false);
   const t = TRANSLATIONS[settings.language];
   const isDark = settings.darkMode;
 
@@ -34,10 +42,61 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
     }
   };
 
+  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
+
+  const handleShare = () => {
+    if (shareStatus !== 'ready' || !persistedGameId) return;
+    const url = `${window.location.origin}/game/${persistedGameId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  // Not-found state for cold opens that miss Firestore
+  if (isNotFound) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500">
+        <div className="flex items-center justify-between w-full relative h-14 mb-12">
+          <button onClick={onBack} className={navBtnStyle}>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <button onClick={onGoHome} className="absolute left-1/2 -translate-x-1/2 w-12 h-12 flex items-center justify-center bg-[#2563eb] text-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5" title="Home">
+            <Home className="w-5 h-5" />
+          </button>
+          <div className="w-12" />
+        </div>
+        <div className="flex flex-col items-center justify-center gap-6 py-20 text-center">
+          <AlertCircle className="w-16 h-16 text-slate-500" />
+          <h2 className="text-xl font-bold font-['Press_Start_2P'] text-[#facc15] uppercase">{t.gameNotFound}</h2>
+          <p className="text-sm text-slate-400 max-w-sm leading-relaxed">{t.gameNotFoundDesc}</p>
+          <button onClick={onGoHome} className={`${navBtnStyle} w-auto px-6 gap-2`}>
+            <Home className="w-4 h-4" />
+            <span className="font-['Press_Start_2P'] text-[8px]">{t.back}</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading spinner for cold-open while Firestore fetch is in flight
   if (!detail) return null;
 
   const directions = (detail.teacher_directions[directionLevel] || detail.teacher_directions.medium).slice(0, 5);
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
+
+  const shareIcon = () => {
+    if (shareStatus === 'saving') return <Loader2 className="w-4 h-4 animate-spin" />;
+    if (copied) return <Check className="w-4 h-4 text-[#4ade80]" />;
+    return <Link className="w-4 h-4" />;
+  };
+
+  const shareLabel = () => {
+    if (shareStatus === 'error') return t.shareNotReady;
+    if (copied) return t.linkCopied;
+    return t.shareCopyLink;
+  };
+
+  const shareDisabled = shareStatus !== 'ready';
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500">
@@ -52,6 +111,14 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
           </button>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              disabled={shareDisabled}
+              title={shareLabel()}
+              className={`${navBtnStyle} ${shareDisabled ? 'opacity-50 cursor-not-allowed' : ''} ${shareStatus === 'error' ? 'bg-red-600' : ''}`}
+            >
+              {shareIcon()}
+            </button>
             {currentUser ? (
                 <button onClick={signOutUser} className="flex items-center gap-2 px-3 py-1.5 h-12 bg-blue-600 text-white border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold font-['Press_Start_2P'] text-[8px] uppercase active:translate-y-0.5">
                     <LogOut className="w-4 h-4" />
@@ -73,7 +140,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
       </div>
 
       <div className="flex flex-col gap-6 md:gap-8">
-        
+
         {/* Section 0: Result Icon */}
         <div className="flex flex-col items-center justify-center">
             <div className="text-6xl md:text-7xl mb-4 select-none">
@@ -81,7 +148,7 @@ export const Screen3_Detail: React.FC<Props> = ({ detail, onBack, onGoHome, sett
             </div>
         </div>
 
-        {/* Section 1: Title & Tags - Further reduced font size and weight to satisfy pressure reduction */}
+        {/* Section 1: Title & Tags */}
         <div className="text-center relative px-2">
             <h1 className={`text-lg md:text-4xl font-semibold ${settings.language === 'en' ? "font-['Press_Start_2P'] uppercase" : "font-bold font-sans"} text-[#facc15] leading-normal mb-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] tracking-tighter truncate whitespace-nowrap overflow-hidden`}>
                 {detail.game_title}
