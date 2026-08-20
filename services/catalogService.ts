@@ -12,7 +12,7 @@ import {
   where,
   limit,
   runTransaction
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "firebase/firestore";
 import { GameDetail, CatalogGame } from '../types';
 
 const COLLECTION_NAME = "catalog_games";

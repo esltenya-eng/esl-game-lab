@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { auth } from '../firebase';
-import { 
-  verifyPasswordResetCode, 
-  confirmPasswordReset 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  verifyPasswordResetCode,
+  confirmPasswordReset
+} from "firebase/auth";
 import { Lock, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface Props {
