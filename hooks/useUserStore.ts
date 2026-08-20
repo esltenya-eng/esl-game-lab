@@ -3,21 +3,21 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, GameRecommendation, UserProfile, SupportedLanguage } from '../types';
 import { HISTORY_LIMIT } from '../constants';
 import { auth, db, googleProvider } from '../firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
+import {
+  onAuthStateChanged,
+  signInWithPopup,
   getRedirectResult,
-  signOut 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-  doc, 
-  setDoc, 
+  signOut
+} from "firebase/auth";
+import {
+  doc,
+  setDoc,
   getDoc,
-  collection, 
-  getDocs, 
-  deleteDoc, 
-  serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  collection,
+  getDocs,
+  deleteDoc,
+  serverTimestamp
+} from "firebase/firestore";
 
 const STORAGE_KEYS = {
   SETTINGS: 'eslgamelab_settings',

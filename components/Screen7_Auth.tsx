@@ -4,15 +4,15 @@ import { TRANSLATIONS } from '../constants';
 import { X, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { useUserStore } from '../hooks/useUserStore';
 import { auth, db } from '../firebase';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-  doc, 
-  setDoc, 
-  serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "firebase/auth";
+import {
+  doc,
+  setDoc,
+  serverTimestamp
+} from "firebase/firestore";
 import { Footer } from './Footer';
 
 interface Props {
