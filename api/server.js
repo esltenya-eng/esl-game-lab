@@ -81,6 +81,36 @@ const getLanguageName = (code) => {
 
 const slugify = (text) => text.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
+// Escapes text for safe embedding inside SVG markup.
+const escapeSvgText = (str) => str
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+// Deterministic HSL background color derived from the game id, so repeated
+// placeholders for the same game look consistent without any external asset.
+const colorFromSeed = (seed) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  const hue = hash % 360;
+  return `hsl(${hue}, 60%, 55%)`;
+};
+
+// Builds a self-contained inline SVG placeholder (as a data URI) so we never
+// depend on an external image CDN while real image generation is pending.
+const buildPlaceholderImage = (gameId) => {
+  const label = escapeSvgText(gameId.slice(0, 40));
+  const bg = colorFromSeed(gameId);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+    <rect width="400" height="300" fill="${bg}" />
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" fill="#ffffff">${label}</text>
+  </svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+};
+
 // POST /api/recommendations - Get game recommendations
 app.post('/api/recommendations', async (req, res) => {
   try {
@@ -272,11 +302,10 @@ app.post('/api/image-proxy/generate', async (req, res) => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     // Note: Gemini doesn't have image generation yet, so we'll return a placeholder
-    // When Gemini image generation becomes available, implement it here
-
-    // For now, return a placeholder response
+    // When Gemini image generation becomes available, implement it here.
+    // The placeholder is a self-contained inline SVG (no external CDN dependency).
     res.json({
-      imageUrl: `https://via.placeholder.com/400x300?text=${encodeURIComponent(gameId)}`,
+      imageUrl: buildPlaceholderImage(gameId),
       message: 'Image generation not yet implemented. Using placeholder.'
     });
 
