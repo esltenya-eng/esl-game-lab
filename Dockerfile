@@ -60,5 +60,12 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Start the application with production-optimized settings
-CMD ["serve", "-s", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching"]
+# Start the application with production-optimized settings.
+# NOTE: intentionally NOT using `-s` (single-page/SPA mode) here -- that flag
+# rewrites *every* unmatched path (including /robots.txt, /sitemap.xml,
+# /favicon.ico, and genuinely-nonexistent paths) to index.html, which made
+# every URL on the site byte-identical and crawlers unable to see any real
+# content. dist/serve.json (copied from public/serve.json) defines a
+# narrower rewrite for just the app's real client-side route (/game/**), so
+# static files serve as themselves and truly unknown paths get a real 404.
+CMD ["serve", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching"]
