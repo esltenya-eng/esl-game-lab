@@ -21,8 +21,10 @@ const generateId = (title: string) => {
   return title.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 };
 
-// Fetch a single game by its slug id. Returns null on miss or Firestore error.
+// Fetch a single game by its slug id. Returns null on miss, Firestore error,
+// or if Firebase failed to initialize this session (see firebase.ts).
 export const getGameById = async (id: string): Promise<CatalogGame | null> => {
+  if (!db) return null;
   try {
     const snap = await getDoc(doc(db, COLLECTION_NAME, id));
     return snap.exists() ? (snap.data() as CatalogGame) : null;
@@ -38,6 +40,8 @@ export const persistGameDetail = async (
   game: GameDetail,
   source: 'generated' | 'internal' = 'generated'
 ): Promise<string | null> => {
+  if (!db) return null;
+  const firestore = db; // narrow once so the closures below don't need to re-check
   const baseId = generateId(game.game_title);
 
   const lowerTitle = game.game_title.toLowerCase();
@@ -50,11 +54,11 @@ export const persistGameDetail = async (
 
   for (let attempt = 1; attempt <= 10; attempt++) {
     const candidateId = attempt === 1 ? baseId : `${baseId}-${attempt}`;
-    const docRef = doc(db, COLLECTION_NAME, candidateId);
+    const docRef = doc(firestore, COLLECTION_NAME, candidateId);
 
     let stored = false;
     try {
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(firestore, async (transaction) => {
         const snap = await transaction.get(docRef);
         if (snap.exists()) return; // slot taken; commit an empty transaction and loop
         transaction.set(docRef, {
@@ -78,14 +82,16 @@ export const persistGameDetail = async (
   return null; // all 10 slots taken (not expected in practice)
 };
 
-export const fetchAllCatalogGames = async () => {
+export const fetchAllCatalogGames = async (): Promise<CatalogGame[]> => {
+  if (!db) return [];
   const colRef = collection(db, COLLECTION_NAME);
   const q = query(colRef, orderBy("updatedAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data() as CatalogGame);
 };
 
-export const getGamesWithoutImages = async (max: number = 20) => {
+export const getGamesWithoutImages = async (max: number = 20): Promise<CatalogGame[]> => {
+  if (!db) return [];
   const colRef = collection(db, COLLECTION_NAME);
   const q = query(colRef, where("imageUrl", "==", null), limit(max));
   const snap = await getDocs(q);
@@ -93,6 +99,7 @@ export const getGamesWithoutImages = async (max: number = 20) => {
 };
 
 export const updateGameImage = async (id: string, imageUrl: string) => {
+  if (!db) return;
   const docRef = doc(db, COLLECTION_NAME, id);
   await setDoc(docRef, { imageUrl, updatedAt: serverTimestamp() }, { merge: true });
 };

@@ -27,6 +27,7 @@ export const Screen9_ResetPassword: React.FC<Props> = ({ oobCode, onSuccess, set
   useEffect(() => {
     const verifyCode = async () => {
       try {
+        if (!auth) throw { code: 'auth/unavailable' };
         await verifyPasswordResetCode(auth, oobCode);
         setStatus('ready');
       } catch (err: any) {
@@ -60,6 +61,7 @@ export const Screen9_ResetPassword: React.FC<Props> = ({ oobCode, onSuccess, set
 
     setStatus('processing');
     try {
+      if (!auth) throw { code: 'auth/unavailable' };
       await confirmPasswordReset(auth, oobCode, newPassword);
       setStatus('success');
     } catch (err: any) {

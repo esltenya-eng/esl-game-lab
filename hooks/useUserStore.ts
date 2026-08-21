@@ -75,8 +75,8 @@ export const useUserStore = () => {
     setSettings(newSettings);
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(newSettings));
     manualUpdateRef.current = Date.now();
-    
-    if (auth.currentUser) {
+
+    if (auth?.currentUser && db) {
       try {
         await setDoc(doc(db, `users/${auth.currentUser.uid}/preferences`, "settings"), {
           language: newSettings.language,
@@ -91,8 +91,9 @@ export const useUserStore = () => {
   }, []);
 
   const syncFromFirestore = useCallback(async (uid: string) => {
+    if (!db) return; // Firebase unavailable this session -- stay on local/guest data
     if (Date.now() - manualUpdateRef.current < 5000) return;
-    
+
     setSyncStatus('syncing');
     try {
       const favsCol = collection(db, `users/${uid}/favorites`);
@@ -123,6 +124,9 @@ export const useUserStore = () => {
 
   // 구글 로그인 함수 강화
   const signInWithGoogle = useCallback(async () => {
+    if (!auth || !googleProvider) {
+      throw { code: 'auth/unavailable', message: 'Sign-in is temporarily unavailable.' };
+    }
     setIsAuthLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -138,7 +142,7 @@ export const useUserStore = () => {
 
   const signOutUser = useCallback(async () => {
     try {
-      await signOut(auth);
+      if (auth) await signOut(auth);
       setCurrentUser(null);
       setSyncStatus('idle');
     } catch (error) {
@@ -147,6 +151,13 @@ export const useUserStore = () => {
   }, []);
 
   useEffect(() => {
+    // Firebase failed to initialize this session -- stay in guest mode
+    // (game browsing works fine without it) instead of spinning forever.
+    if (!auth) {
+      setIsAuthLoading(false);
+      return;
+    }
+
     // Track if this is the first auth state change to avoid redundant syncs
     let isInitialLoad = true;
 
@@ -175,10 +186,12 @@ export const useUserStore = () => {
         }
 
         // Update last seen timestamp (lightweight operation)
-        setDoc(doc(db, "users", user.uid), {
-            ...profile,
-            lastSeen: serverTimestamp()
-        }, { merge: true }).catch(err => console.error("Failed to update lastSeen:", err));
+        if (db) {
+          setDoc(doc(db, "users", user.uid), {
+              ...profile,
+              lastSeen: serverTimestamp()
+          }, { merge: true }).catch(err => console.error("Failed to update lastSeen:", err));
+        }
       } else {
         setCurrentUser(null);
         // User signed out
@@ -196,7 +209,7 @@ export const useUserStore = () => {
         ? prev.filter(g => g.game_title !== game.game_title)
         : [...prev, game];
       
-      if (auth.currentUser) {
+      if (auth?.currentUser && db) {
         localStorage.setItem(getUserFavKey(auth.currentUser.uid), JSON.stringify(updated));
         const gameId = getGameId(game.game_title);
         const favRef = doc(db, `users/${auth.currentUser.uid}/favorites`, gameId);
@@ -221,7 +234,7 @@ export const useUserStore = () => {
         const game = prev.find(g => g.game_title === gameTitle);
         if (game) {
             const updated = prev.filter(g => g.game_title !== gameTitle);
-            if (auth.currentUser) {
+            if (auth?.currentUser && db) {
                 localStorage.setItem(getUserFavKey(auth.currentUser.uid), JSON.stringify(updated));
                 const gameId = getGameId(gameTitle);
                 const favRef = doc(db, `users/${auth.currentUser.uid}/favorites`, gameId);
