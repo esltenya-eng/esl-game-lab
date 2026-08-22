@@ -10,6 +10,12 @@ export const HOME_HERO_TITLE = "ESL GAME LAB";
 export const HOME_HERO_SUBTITLE_KO = "매력적인 영어 수업을 위한 맞춤 게임 활동을 찾아보세요.";
 export const DEVELOPER_BLOG_URL = "https://blog.naver.com/elt_tenya";
 
+// Shared header nav-button style (back/close/home icon buttons). This was
+// independently copy-pasted into 7 screen components before -- centralizing
+// it here means a future style tweak only needs one edit, and a linter/grep
+// can actually find all real usages instead of 7 near-identical strings.
+export const NAV_BTN_STYLE = "w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all";
+
 export const FAMOUS_GAMES = [
   { title: "Charades", tip: "A quiet movement game that helps students refocus without raising noise levels.", icon: "🎭" },
   { title: "Running Dictation", icon: "🏃", tip: "Great for high energy classes needing to practice reading and writing." },

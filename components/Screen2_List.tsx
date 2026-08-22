@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GameRecommendation, SelectionState, AppSettings } from '../types';
 import { ArrowLeft, Heart, Search, LogIn, UserPlus, LogOut, Home, Loader2, Check, AlertCircle } from 'lucide-react';
-import { TRANSLATIONS, GRAMMAR_TOPIC_LABELS } from '../constants';
+import { TRANSLATIONS, GRAMMAR_TOPIC_LABELS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 import { useUserStore } from '../hooks/useUserStore';
 
 interface Props {
@@ -61,7 +61,6 @@ export const Screen2_List: React.FC<Props> = ({
     return GRAMMAR_TOPIC_LABELS[lang]?.[key] || GRAMMAR_TOPIC_LABELS.en[key] || key;
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
 
   // 공통 호출 함수: grammarTopic이 검색 시 누락되지 않도록 함
   const handlePerformUpdate = (isAppend: boolean) => {

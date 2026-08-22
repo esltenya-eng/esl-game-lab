@@ -24,6 +24,7 @@ export const Screen10_TermsOfService: React.FC<Props> = ({ onBack, settings }) =
       <div className="flex items-center">
         <button
           onClick={onBack}
+          aria-label="Back"
           className={`p-2 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(15,23,42,1)] transition-all ${
             isDark ? 'bg-slate-700 text-white' : 'bg-white text-slate-900'
           }`}

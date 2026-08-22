@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppSettings, SupportedLanguage } from '../types';
 import { ArrowLeft, Moon, Sun, Volume2, Type, Globe, Sliders, LogOut, User, Check } from 'lucide-react';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 import { useUserStore } from '../hooks/useUserStore';
 
 interface Props {
@@ -32,7 +32,6 @@ export const Screen4_Settings: React.FC<Props> = ({ settings, onUpdateSettings, 
     setTimeout(() => setIsApplying(false), 500);
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
   const cardClass = `p-4 rounded-2xl border-2 border-black ${isDark ? 'bg-slate-800/50' : 'bg-white'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`;
 
   return (
