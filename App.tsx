@@ -290,12 +290,20 @@ const App: React.FC = () => {
       {error && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-4 z-[3000] rounded-xl font-bold border-4 border-black animate-in slide-in-from-top-4">
           <span className="font-['Press_Start_2P'] text-[10px] uppercase">ERROR: {error}</span>
-          <button onClick={clearError} className="ml-4 font-bold">&times;</button>
+          <button onClick={clearError} aria-label="Dismiss error" className="ml-4 font-bold">&times;</button>
         </div>
       )}
 
+      {/* AdBanner lives outside <main> and outside <Footer>'s own <footer>
+          landmark, so screen reader users landed here via landmark
+          navigation would miss it entirely (axe: "region" rule). Give it its
+          own "complementary" landmark rather than another <footer> --
+          Footer.tsx already renders one, and two <footer> landmarks on the
+          same page is itself an axe violation (landmark-unique). */}
       {!isLoading && currentScreen !== AppScreen.AUTH && (
-        <AdBanner isDark={settings.darkMode} isLoading={isLoading} />
+        <aside aria-label="Advertisement" className="relative z-10">
+          <AdBanner isDark={settings.darkMode} isLoading={isLoading} />
+        </aside>
       )}
 
       {currentScreen !== AppScreen.AUTH && (
@@ -311,7 +319,7 @@ const App: React.FC = () => {
               <div className="hidden md:flex flex-col items-start gap-4">
                 {leftMenuActions.map((item, idx) => (
                   <div key={idx} className="relative w-12 h-12 flex justify-start">
-                    <button onClick={item.action} className={`group absolute left-0 flex items-center justify-start h-12 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 ease-out overflow-hidden w-12 hover:w-max hover:min-w-[120px] ${item.colorClass}`}>
+                    <button onClick={item.action} aria-label={item.label} className={`group absolute left-0 flex items-center justify-start h-12 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 ease-out overflow-hidden w-12 hover:w-max hover:min-w-[120px] ${item.colorClass}`}>
                       <div className="pl-3 shrink-0"><item.icon className="w-5 h-5" /></div>
                       <div className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-1.5 group-hover:translate-x-0 whitespace-nowrap px-3">
                         <span className="font-['Press_Start_2P'] text-[9px] uppercase tracking-tight">{item.label}</span>
@@ -324,13 +332,13 @@ const App: React.FC = () => {
                   {isLeftMobileMenuOpen && (
                      <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
                        {leftMenuActions.map((item, idx) => (
-                         <button key={idx} onClick={item.action} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.colorClass}`}>
+                         <button key={idx} onClick={item.action} aria-label={item.label} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.colorClass}`}>
                            <item.icon className="w-5 h-5" />
                          </button>
                        ))}
                      </div>
                   )}
-                  <button onClick={() => setIsLeftMobileMenuOpen(!isLeftMobileMenuOpen)} className="w-12 h-12 bg-emerald-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <button onClick={() => setIsLeftMobileMenuOpen(!isLeftMobileMenuOpen)} aria-label={isLeftMobileMenuOpen ? 'Close menu' : 'Open menu'} className="w-12 h-12 bg-emerald-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     {isLeftMobileMenuOpen ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </button>
               </div>
@@ -341,14 +349,14 @@ const App: React.FC = () => {
             <div className="fixed bottom-24 z-[999] flex flex-col items-end gap-3 transition-all duration-300" style={{ right: 'max(1rem, calc(50vw - 448px - 5rem))' }}>
                 {/* 상세 화면(DETAIL)과 리스트 화면(LIST)에서는 상단 홈 버튼이 있으므로 플로팅 홈 버튼을 숨김 */}
                 {!isHomeActive && currentScreen !== AppScreen.LIST && currentScreen !== AppScreen.DETAIL && (
-                  <button onClick={resetToHome} className="w-12 h-12 bg-blue-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-in zoom-in active:translate-y-0.5">
+                  <button onClick={resetToHome} aria-label="Home" className="w-12 h-12 bg-blue-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-in zoom-in active:translate-y-0.5">
                     <Home className="w-5 h-5" />
                   </button>
                 )}
                 
                 <div className="hidden md:flex flex-col gap-3">
                      {menuActions.map((item, idx) => (
-                       <button key={idx} onClick={item.action} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${item.isActive ? 'ring-4 ring-white scale-110' : 'hover:scale-105'} ${item.colorClass}`}>
+                       <button key={idx} onClick={item.action} aria-label={item.label} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${item.isActive ? 'ring-4 ring-white scale-110' : 'hover:scale-105'} ${item.colorClass}`}>
                          <item.icon className="w-5 h-5" />
                        </button>
                      ))}
@@ -358,19 +366,19 @@ const App: React.FC = () => {
                     {isMobileMenuOpen && (
                        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
                          {menuActions.map((item, idx) => (
-                           <button key={idx} onClick={item.action} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.isActive ? 'ring-4 ring-white' : ''} ${item.colorClass}`}>
+                           <button key={idx} onClick={item.action} aria-label={item.label} className={`w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.isActive ? 'ring-4 ring-white' : ''} ${item.colorClass}`}>
                              <item.icon className="w-5 h-5" />
                            </button>
                          ))}
                        </div>
                     )}
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="w-12 h-12 bg-indigo-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'} className="w-12 h-12 bg-indigo-600 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                       {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                     </button>
                 </div>
 
                 {showScrollTop && (
-                  <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="w-12 h-12 bg-slate-800 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Scroll to top" className="w-12 h-12 bg-slate-800 text-white flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <ArrowUp className="w-5 h-5" />
                   </button>
                 )}

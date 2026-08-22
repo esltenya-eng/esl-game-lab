@@ -74,6 +74,25 @@ export const AdBanner: React.FC<Props> = ({ isDark, isLoading }) => {
     };
   }, []);
 
+  // The Coupang script injects its own <iframe> with no title attribute
+  // (axe: "frame-title"), and we don't control that markup directly.
+  // Watch the container and label any iframe that shows up in it.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const labelFrames = () => {
+      container.querySelectorAll('iframe:not([title])').forEach((frame) => {
+        frame.setAttribute('title', 'Advertisement');
+      });
+    };
+
+    labelFrames();
+    const observer = new MutationObserver(labelFrames);
+    observer.observe(container, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="w-full py-4 mt-4 animate-in fade-in duration-700">
       <div className="max-w-4xl mx-auto px-4 md:px-6">
@@ -97,7 +116,7 @@ export const AdBanner: React.FC<Props> = ({ isDark, isLoading }) => {
         </div>
         
         {/* 쿠팡 파트너스 안내 문구 추가 (푸터 텍스트 크기와 동일하게 text-[10px] md:text-xs 적용) */}
-        <p className={`mt-2 text-center text-[10px] md:text-xs font-medium leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <p className={`mt-2 text-center text-[10px] md:text-xs font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
         </p>
       </div>

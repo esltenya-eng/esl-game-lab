@@ -155,7 +155,7 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
         }`} 
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onBack} disabled={isProcessing} className="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-500/10 disabled:opacity-30 z-20">
+        <button onClick={onBack} disabled={isProcessing} aria-label="Close" className="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-500/10 disabled:opacity-30 z-20">
             <X className="w-5 h-5 opacity-60" />
         </button>
 
@@ -189,24 +189,26 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
                             <span className="font-['Press_Start_2P'] text-[9px] uppercase">Continue with Google</span>
                         </button>
 
-                        <div className="flex items-center gap-4 py-1 opacity-20">
-                            <div className="h-px bg-current flex-1"></div>
-                            <span className="text-[8px] font-bold uppercase font-['Press_Start_2P'] tracking-widest">OR</span>
-                            <div className="h-px bg-current flex-1"></div>
+                        <div className="flex items-center gap-4 py-1">
+                            <div className="h-px bg-current flex-1 opacity-20"></div>
+                            <span className="text-[8px] font-bold uppercase font-['Press_Start_2P'] tracking-widest opacity-60">OR</span>
+                            <div className="h-px bg-current flex-1 opacity-20"></div>
                         </div>
 
                         <form onSubmit={handleCredentialsSubmit} className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-80 pl-1">Email</label>
-                                <input 
+                                <label htmlFor="auth-email" className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-80 pl-1">Email</label>
+                                <input
+                                    id="auth-email"
                                     type="email" value={email} required
                                     onChange={(e) => setEmail(e.target.value)}
                                     className={`w-full px-4 py-3 rounded-xl border-2 border-slate-900 focus:outline-none text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,0.05)] ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-50 text-slate-900'}`}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-80 pl-1">Password</label>
-                                <input 
+                                <label htmlFor="auth-password" className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-80 pl-1">Password</label>
+                                <input
+                                    id="auth-password"
                                     type="password" value={password} required
                                     onChange={(e) => setPassword(e.target.value)}
                                     className={`w-full px-4 py-3 rounded-xl border-2 border-slate-900 focus:outline-none text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,0.05)] ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-50 text-slate-900'}`}
@@ -245,8 +247,9 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
                     </div>
                     
                     <div className="space-y-1.5">
-                        <label className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-90 pl-1">Nickname *</label>
-                        <input 
+                        <label htmlFor="auth-nickname" className="block text-[8px] font-bold font-['Press_Start_2P'] uppercase tracking-widest opacity-90 pl-1">Nickname *</label>
+                        <input
+                            id="auth-nickname"
                             type="text" value={nickname} required
                             onChange={(e) => setNickname(e.target.value)}
                             className={`w-full px-4 py-3 rounded-xl border-2 border-slate-900 focus:outline-none text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,0.05)] ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-50 text-slate-900'}`}

@@ -71,7 +71,7 @@ export const Screen2_List: React.FC<Props> = ({
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 pb-24 font-sans relative">
       <div className="flex items-center justify-between w-full relative h-14 mb-8">
-          <button onClick={onBack} className={navBtnStyle}>
+          <button onClick={onBack} className={navBtnStyle} aria-label="Back">
               <ArrowLeft className="w-5 h-5" />
           </button>
 
@@ -91,7 +91,7 @@ export const Screen2_List: React.FC<Props> = ({
                         <LogIn className="w-4 h-4" />
                         <span className="hidden sm:inline font-['Press_Start_2P'] text-[8px]">{t.signIn}</span>
                     </button>
-                    <button onClick={() => onOpenAuth('signup')} className={`${navBtnStyle} w-auto px-3 gap-2 bg-[#facc15] text-slate-900`}>
+                    <button onClick={() => onOpenAuth('signup')} className={`${navBtnStyle} w-auto px-3 gap-2 bg-[#facc15] !text-slate-900`}>
                         <UserPlus className="w-4 h-4" />
                         <span className="hidden sm:inline font-['Press_Start_2P'] text-[8px]">{t.signUp}</span>
                     </button>

@@ -36,9 +36,11 @@ export const Screen5_Favorites: React.FC<Props> = ({
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 pb-20 relative font-sans">
+      {/* No visible title in this header (icon-only nav); the h1 exists for screen readers */}
+      <h1 className="sr-only">{t.favorites}</h1>
       {/* Standardized Header Navigation */}
       <div className="flex items-center justify-between w-full relative h-14 mb-12">
-          <button onClick={onBack} className={navBtnStyle}>
+          <button onClick={onBack} className={navBtnStyle} aria-label="Back">
               <ArrowLeft className="w-5 h-5" />
           </button>
 

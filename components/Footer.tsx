@@ -22,7 +22,7 @@ export const Footer: React.FC<Props> = ({ settings, onNavigate }) => {
         <button
           onClick={() => onNavigate(AppScreen.PRIVACY)}
           className={`text-[10px] md:text-xs font-bold uppercase tracking-widest hover:underline transition-all ${
-            isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+            isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
           }`}
         >
           {t.privacyPolicy}
@@ -30,7 +30,7 @@ export const Footer: React.FC<Props> = ({ settings, onNavigate }) => {
         <button
           onClick={() => onNavigate(AppScreen.TERMS)}
           className={`text-[10px] md:text-xs font-bold uppercase tracking-widest hover:underline transition-all ${
-            isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+            isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
           }`}
         >
           {t.termsOfService}
@@ -38,7 +38,7 @@ export const Footer: React.FC<Props> = ({ settings, onNavigate }) => {
         <button
           onClick={() => onNavigate(AppScreen.CONTACT)}
           className={`text-[10px] md:text-xs font-bold uppercase tracking-widest hover:underline transition-all ${
-            isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+            isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
           }`}
         >
           {t.contact}
@@ -47,14 +47,14 @@ export const Footer: React.FC<Props> = ({ settings, onNavigate }) => {
       
       {/* Platform Description */}
       <p className={`text-[10px] md:text-xs font-medium max-w-2xl mx-auto leading-relaxed ${
-        isDark ? 'text-slate-600' : 'text-slate-500'
+        isDark ? 'text-slate-400' : 'text-slate-600'
       }`}>
         {t.platformDesc}
       </p>
 
       {/* Copyright */}
       <p className={`text-[10px] md:text-xs font-bold uppercase tracking-widest ${
-        isDark ? 'text-slate-700' : 'text-slate-400'
+        isDark ? 'text-slate-400' : 'text-slate-600'
       }`}>
         {t.footerRights}
       </p>

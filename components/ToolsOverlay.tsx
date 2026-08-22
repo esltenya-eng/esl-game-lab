@@ -188,14 +188,14 @@ export const ToolsOverlay: React.FC<Props> = ({ onClose, settings }) => {
     <div className="max-w-xl mx-auto p-4 md:p-6 pb-20 font-sans relative">
       {/* Standardized Header Navigation */}
       <div className="flex items-center justify-between w-full relative h-14 mb-12">
-          <button onClick={onClose} className={navBtnStyle}>
+          <button onClick={onClose} className={navBtnStyle} aria-label="Close">
               <ArrowLeft className="w-5 h-5" />
           </button>
 
           <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-            <h2 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
+            <h1 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
                 {t.tools}
-            </h2>
+            </h1>
           </div>
 
           <div className="w-12 flex justify-end">

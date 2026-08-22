@@ -119,7 +119,7 @@ export const Screen1_Selection: React.FC<Props> = ({
                         <LogIn className="w-4 h-4" />
                         <span className="hidden sm:inline font-['Press_Start_2P'] text-[8px]">{t.signIn}</span>
                     </button>
-                    <button onClick={() => onOpenAuth('signup')} className={`${navBtnStyle} w-auto px-3 gap-2 bg-[#facc15] text-slate-900`}>
+                    <button onClick={() => onOpenAuth('signup')} className={`${navBtnStyle} w-auto px-3 gap-2 bg-[#facc15] !text-slate-900`}>
                         <UserPlus className="w-4 h-4" />
                         <span className="hidden sm:inline font-['Press_Start_2P'] text-[8px]">{t.signUp}</span>
                     </button>
@@ -160,8 +160,9 @@ export const Screen1_Selection: React.FC<Props> = ({
                     className={`w-full h-[60px] px-4 bg-transparent focus:outline-none text-base md:text-lg ${isDark ? 'text-white placeholder-slate-500' : 'text-slate-900 placeholder-slate-400'}`}
                 />
                 <div className="pr-2">
-                    <button 
+                    <button
                         onClick={handleSearch}
+                        aria-label="Search"
                         className="p-3 bg-[#2563eb] text-white rounded-xl active:scale-95 transition-all shadow-md border-2 border-slate-900"
                     >
                         <Search className="w-6 h-6" />
@@ -229,7 +230,7 @@ export const Screen1_Selection: React.FC<Props> = ({
                       </span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${isActive ? 'rotate-180' : ''}`} />
                     </div>
-                    <span className={`text-sm font-medium truncate w-full ${hasSelections ? 'text-white' : 'opacity-60'}`}>
+                    <span className={`text-sm font-medium truncate w-full ${hasSelections ? 'text-white' : ''}`}>
                         {hasSelections ? selectedItems.join(', ') : t.any || 'Any'}
                     </span>
                   </button>

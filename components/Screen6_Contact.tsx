@@ -65,7 +65,7 @@ export const Screen6_Contact: React.FC<Props> = ({ onBack, settings, user }) => 
                     <CheckCircle2 className="w-12 h-12 text-white" />
                 </div>
             </div>
-            <h2 className={`text-2xl font-black font-['Press_Start_2P'] uppercase ${isDark ? 'text-green-400' : 'text-slate-800'}`}>Sent!</h2>
+            <h1 className={`text-2xl font-black font-['Press_Start_2P'] uppercase ${isDark ? 'text-green-400' : 'text-slate-800'}`}>Sent!</h1>
             <p className={`text-xl font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t.feedbackSuccess}</p>
             <div className="flex flex-col w-full gap-3 pt-4">
                 <button onClick={() => setStatus('idle')} className={`w-full py-4 rounded-xl font-bold font-['Press_Start_2P'] uppercase text-xs flex items-center justify-center border-2 border-slate-900 ${isDark ? 'bg-slate-700 text-white' : 'bg-white text-slate-900'}`}>Return</button>
@@ -78,14 +78,14 @@ export const Screen6_Contact: React.FC<Props> = ({ onBack, settings, user }) => 
     <div className="max-w-xl mx-auto p-4 md:p-6 space-y-6 pb-[calc(60px+env(safe-area-inset-bottom)+24px)] font-sans">
       {/* Standardized Header Navigation */}
       <div className="flex items-center justify-between w-full relative h-14 mb-12">
-          <button onClick={onBack} className={navBtnStyle}>
+          <button onClick={onBack} className={navBtnStyle} aria-label="Back">
               <ArrowLeft className="w-5 h-5" />
           </button>
 
           <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-            <h2 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
+            <h1 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
                 {t.contact}
-            </h2>
+            </h1>
           </div>
 
           <div className="w-12 flex justify-end">
@@ -109,12 +109,12 @@ export const Screen6_Contact: React.FC<Props> = ({ onBack, settings, user }) => 
       </div>
       <form onSubmit={handleSend} className={`border-4 border-black rounded-3xl p-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
          <div className="space-y-4">
-             <textarea value={form.message} onChange={(e) => setForm({...form, message: e.target.value})} placeholder="Leave feedback..." className={`w-full h-40 p-4 border-2 rounded-2xl ${isDark ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} />
+             <textarea value={form.message} onChange={(e) => setForm({...form, message: e.target.value})} placeholder="Leave feedback..." aria-label="Feedback message" className={`w-full h-40 p-4 border-2 rounded-2xl ${isDark ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} />
              <div className="flex justify-between items-center py-2">
                 <span className="text-[8px] font-['Press_Start_2P'] uppercase">Rate Us</span>
                 <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
-                        <button key={star} type="button" onClick={() => setRating(star)}><Star className={`w-6 h-6 ${rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`} /></button>
+                        <button key={star} type="button" onClick={() => setRating(star)} aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`} aria-pressed={rating >= star}><Star className={`w-6 h-6 ${rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`} /></button>
                     ))}
                 </div>
              </div>

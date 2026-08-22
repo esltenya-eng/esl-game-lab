@@ -131,11 +131,12 @@ export const Screen9_ResetPassword: React.FC<Props> = ({ oobCode, onSuccess, set
 
       <form onSubmit={handleSubmit} className={`border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl space-y-6 ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
         <div>
-          <label className="block text-[10px] font-bold font-['Press_Start_2P'] uppercase mb-3 opacity-80">
+          <label htmlFor="reset-new-password" className="block text-[10px] font-bold font-['Press_Start_2P'] uppercase mb-3 opacity-80">
               {t.newPassword}
           </label>
-          <input 
-            type="password" 
+          <input
+            id="reset-new-password"
+            type="password"
             value={newPassword}
             disabled={status === 'processing'}
             onChange={(e) => {
@@ -150,11 +151,12 @@ export const Screen9_ResetPassword: React.FC<Props> = ({ oobCode, onSuccess, set
           />
         </div>
         <div>
-          <label className="block text-[10px] font-bold font-['Press_Start_2P'] uppercase mb-3 opacity-80">
+          <label htmlFor="reset-confirm-password" className="block text-[10px] font-bold font-['Press_Start_2P'] uppercase mb-3 opacity-80">
               {t.confirmNewPassword}
           </label>
-          <input 
-            type="password" 
+          <input
+            id="reset-confirm-password"
+            type="password"
             value={confirmPassword}
             disabled={status === 'processing'}
             onChange={(e) => {
