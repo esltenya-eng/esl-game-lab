@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { GameDetail, AppSettings, GameRecommendation } from '../types';
 import { ArrowLeft, Volume2, User, AlertCircle, Wrench, ListOrdered, Heart, Minus, Plus, LogIn, Home, LogOut, UserPlus, Presentation, Link, Check, Loader2 } from 'lucide-react';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 import { useUserStore } from '../hooks/useUserStore';
 import { ShareStatus } from '../hooks/useGameEngine';
 
@@ -42,7 +42,6 @@ export const Screen3_Detail: React.FC<Props> = ({
     }
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
 
   const handleShare = () => {
     if (shareStatus !== 'ready' || !persistedGameId) return;

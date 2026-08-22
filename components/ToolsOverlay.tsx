@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock, Hash, Type, Volume2, PartyPopper, Trophy, BellRing, AlertCircle, ArrowLeft, Wrench } from 'lucide-react';
 import { AppSettings } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 
 interface Props {
   onClose: () => void;
@@ -174,7 +174,6 @@ export const ToolsOverlay: React.FC<Props> = ({ onClose, settings }) => {
     }
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
   const optionButtonStyle = `flex-1 py-1.5 md:py-2 border-2 border-slate-900 font-['Press_Start_2P'] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none transition-all rounded-lg font-semibold`;
 
   const tabs = [

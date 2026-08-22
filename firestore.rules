@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// DRAFT — reverse-engineered from the app's actual Firestore usage
+// (services/catalogService.ts, hooks/useUserStore.ts,
+// components/Screen11_AdminExport.tsx). NOT verified against the live
+// project: apply this in the Firebase Console (Firestore Database → Rules)
+// or via `firebase deploy --only firestore:rules`, then manually re-test
+// the app's read/write paths below before trusting it in production.
+//
+// Data model this covers:
+//   catalog_games/{id}        - public game catalog (services/catalogService.ts)
+//   users/{uid}                - user profile doc (hooks/useUserStore.ts)
+//   users/{uid}/favorites/{id} - per-user favorites (hooks/useUserStore.ts)
+//   users/{uid}/preferences/{id} - per-user settings (hooks/useUserStore.ts)
+//
+// IMPORTANT gotcha found in the app code: persistGameDetail() in
+// catalogService.ts is called for EVERY visitor who views a game detail,
+// signed in or not (hooks/useGameEngine.ts:258, no auth check). That's the
+// app's actual "shareable game links" feature working as designed, not a
+// bug -- these rules intentionally allow unauthenticated creates on
+// catalog_games so that flow keeps working. If you want to lock that down
+// further (e.g. rate-limit anonymous writes), that needs an App Check /
+// Cloud Function layer, not just rules.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Admin allowlist, mirrored from components/Screen11_AdminExport.tsx's
+    // ADMIN_UIDS. Keep these two lists in sync by hand -- Firestore rules
+    // can't import from the app bundle.
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.uid in ['y2CggMdci9gnhpsYdM0i8mzVPKw1'];
+    }
+
+    // --- catalog_games ---
+    // Public read: guest cold-opens (/game/<id>) fetch this with no auth
+    // (services/catalogService.ts: getGameById, fetchAllCatalogGames).
+    // Public create: persistGameDetail() runs for every visitor, signed in
+    // or not -- see note above.
+    // Update: only through updateGameImage()'s exact shape (imageUrl +
+    // updatedAt), and only by an admin (it's only ever called from the
+    // admin console's batch image generator).
+    // Delete: nobody -- the app never deletes catalog docs.
+    match /catalog_games/{gameId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['imageUrl', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // --- users/{uid} ---
+    // Profile doc: setDoc(..., {merge: true}) on login (last-seen) and on
+    // signup (Screen7_Auth.tsx). Only the owner should ever read/write
+    // their own profile.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      // --- users/{uid}/favorites/{gameId} ---
+      match /favorites/{gameId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // --- users/{uid}/preferences/{id} ---
+      match /preferences/{prefId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // Default deny for anything not explicitly matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

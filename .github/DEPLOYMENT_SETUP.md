@@ -63,7 +63,6 @@ Add these secrets:
 | `GCP_PROJECT_ID` | Your Google Cloud Project ID | Found in GCP Console |
 | `GCP_SA_KEY` | Service account JSON key | Content of `key.json` from step 1 |
 | `GEMINI_API_KEY` | Your Gemini API key | From Google AI Studio |
-| `VITE_ADMIN_CODE` | Admin access code for export page | Choose a secure string |
 | `VITE_FIREBASE_API_KEY` | Firebase Web API Key | Firebase Console → Project Settings |
 | `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Auth Domain | Firebase Console → Project Settings |
 | `VITE_FIREBASE_PROJECT_ID` | Firebase Project ID | Firebase Console → Project Settings |

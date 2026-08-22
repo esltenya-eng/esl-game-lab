@@ -58,7 +58,7 @@ export const OnboardingOverlay: React.FC<Props> = ({ onClose, settings }) => {
                     STEP {currentStep + 1} / {steps.length}
                 </span>
             </div>
-            <button onClick={onClose} className="hover:text-red-500 transition-all p-1.5 rounded-xl bg-slate-500/10">
+            <button onClick={onClose} aria-label="Close" className="hover:text-red-500 transition-all p-1.5 rounded-xl bg-slate-500/10">
                 <X className="w-5 h-5 md:w-6 md:h-6 opacity-80" />
             </button>
         </div>

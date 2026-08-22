@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Star, CheckCircle2, Home, MessageCircle } from 'lucide-react';
 import { AppSettings, UserProfile } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 import { PROFILE_MESSAGES } from '../content/profile_message';
 
 interface Props {
@@ -54,7 +54,6 @@ export const Screen6_Contact: React.FC<Props> = ({ onBack, settings, user }) => 
     }
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
   const devImageUrl = "https://raw.githubusercontent.com/esltenya-eng/esl-game-lab-assets/main/esl_game_profile.jpeg";
 
   if (status === 'success') {

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import { GoogleGenAI, Type } from '@google/genai';
 
 dotenv.config();
@@ -40,6 +41,12 @@ const PORT = process.env.PORT || 8080;
 // Cloud Run puts exactly one reverse proxy (Google Front End) in front of the
 // container, so the client's real IP is the first hop in X-Forwarded-For.
 app.set('trust proxy', 1);
+
+// Sets the standard set of defensive headers (X-Content-Type-Options,
+// X-Frame-Options, HSTS, removes X-Powered-By, etc). This is a pure JSON
+// API with no HTML/DOM, so most of helmet's browser-facing protections are
+// low-stakes here, but there's no reason not to have them as a baseline.
+app.use(helmet());
 
 // Every route below calls Gemini (a paid, per-request API) and has no auth in
 // front of it -- the frontend just calls these URLs directly, and so can

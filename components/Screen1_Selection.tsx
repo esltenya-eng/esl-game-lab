@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SELECTION_OPTIONS, TRANSLATIONS, HOME_HERO_TITLE, GRAMMAR_TOPICS, GRAMMAR_TOPIC_LABELS } from '../constants';
+import { SELECTION_OPTIONS, TRANSLATIONS, HOME_HERO_TITLE, GRAMMAR_TOPICS, GRAMMAR_TOPIC_LABELS, NAV_BTN_STYLE as navBtnStyle } from '../constants';
 import { SelectionState, AppSettings } from '../types';
 import { Sparkles, ChevronDown, Search, Info, LogIn, UserPlus, LogOut, Gamepad2, Home, Check, Book } from 'lucide-react';
 import { OnboardingOverlay } from './OnboardingOverlay';
@@ -88,7 +88,6 @@ export const Screen1_Selection: React.FC<Props> = ({
     onNext(selections, searchQuery, selections.skill.includes('Grammar') ? grammarTopic : undefined);
   };
 
-  const navBtnStyle = `w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none bg-[#3b82f6] text-white transition-all`;
 
   return (
     <div id="home-screen" data-screen="home" className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 md:space-y-12 pb-10 relative font-sans">
