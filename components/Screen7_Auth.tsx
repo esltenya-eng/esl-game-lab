@@ -69,6 +69,7 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
             setStep('profile');
             setIsProcessing(false);
         } else {
+            if (!auth) throw { code: 'auth/unavailable' };
             await signInWithEmailAndPassword(auth, email, password);
         }
     } catch (err: any) {
@@ -89,6 +90,7 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
       'auth/popup-closed-by-user': 'Sign-in was cancelled.',
       'auth/cancelled-popup-request': 'Sign-in was cancelled.',
       'auth/invalid-credential': 'Invalid email or password.',
+      'auth/unavailable': 'Sign-in is temporarily unavailable. Please try again later.',
     };
     return messages[code] || 'Sign-in failed. Please try again.';
   };
@@ -116,6 +118,7 @@ export const Screen7_Auth: React.FC<Props> = ({ onBack, onLoginSuccess, settings
     setError(null);
 
     try {
+        if (!auth || !db) throw { code: 'auth/unavailable' };
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
