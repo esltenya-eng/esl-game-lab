@@ -38,13 +38,13 @@ export const Screen4_Settings: React.FC<Props> = ({ settings, onUpdateSettings, 
   return (
     <div className="max-w-xl mx-auto p-4 pb-10 font-sans relative z-10 animate-in fade-in duration-500">
       <div className="flex items-center justify-between w-full relative h-14 mb-8">
-          <button onClick={(e) => { onUpdateSettings(draft); onBack(e); }} className={navBtnStyle}>
+          <button onClick={(e) => { onUpdateSettings(draft); onBack(e); }} className={navBtnStyle} aria-label="Save and go back">
               <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-            <h2 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
+            <h1 className={`text-[10px] md:text-sm font-['Press_Start_2P'] uppercase ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>
                 {t.settings}
-            </h2>
+            </h1>
           </div>
           <div className="w-12 flex justify-end"><Sliders className={`w-6 h-6 ${isDark ? 'text-yellow-400' : 'text-slate-800'}`} /></div>
       </div>
@@ -105,7 +105,7 @@ export const Screen4_Settings: React.FC<Props> = ({ settings, onUpdateSettings, 
                 <span className={`text-base font-bold uppercase ${isDark ? 'text-white' : 'text-slate-900'}`}>{t.volumeSettings}</span>
             </div>
             <div className="space-y-2 px-2">
-                <input type="range" min="0" max="100" value={draft.volume} onChange={(e) => setDraft(prev => ({ ...prev, volume: parseInt(e.target.value) }))} className="w-full h-2 bg-slate-400 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                <input type="range" min="0" max="100" value={draft.volume} onChange={(e) => setDraft(prev => ({ ...prev, volume: parseInt(e.target.value) }))} aria-label={t.volumeSettings} className="w-full h-2 bg-slate-400 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                 <div className={`text-right font-['VT323'] text-2xl ${isDark ? 'text-white' : 'text-slate-900'}`}>{draft.volume}%</div>
             </div>
         </div>
