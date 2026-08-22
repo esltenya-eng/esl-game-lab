@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import { GoogleGenAI, Type } from '@google/genai';
 
 dotenv.config();
@@ -35,6 +36,41 @@ const setCachedResponse = (cache, key, data) => {
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// Cloud Run puts exactly one reverse proxy (Google Front End) in front of the
+// container, so the client's real IP is the first hop in X-Forwarded-For.
+app.set('trust proxy', 1);
+
+// Every route below calls Gemini (a paid, per-request API) and has no auth in
+// front of it -- the frontend just calls these URLs directly, and so can
+// anyone else who finds them. Rate limit per-IP so a script can't run up the
+// Gemini bill by hammering the endpoint (the recommendations cache is also
+// trivially bypassed by varying excludedGames, so caching alone isn't a
+// mitigation).
+const rateLimitHandler = (req, res) => {
+  res.status(429).json({
+    error: 'Too many requests',
+    message: 'Rate limit exceeded. Please try again later.',
+  });
+};
+
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitHandler,
+});
+
+// Stricter: this endpoint is only meant to be used from the admin console's
+// batch image generator (10 at a time), not by regular visitors.
+const imageLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitHandler,
+});
 
 const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ||
   `You are the expert game engine for "ESL GAME LAB", recommending English classroom activities for elementary students.
@@ -112,7 +148,7 @@ const buildPlaceholderImage = (gameId) => {
 };
 
 // POST /api/recommendations - Get game recommendations
-app.post('/api/recommendations', async (req, res) => {
+app.post('/api/recommendations', aiLimiter, async (req, res) => {
   try {
     const { filters, searchQuery: rawQuery, language = 'en', grammarTopic: rawTopic, excludedGames = [] } = req.body;
     const searchQuery = sanitizeInput(rawQuery, 100);
@@ -200,7 +236,7 @@ app.post('/api/recommendations', async (req, res) => {
 });
 
 // POST /api/game-detail - Get detailed game instructions
-app.post('/api/game-detail', async (req, res) => {
+app.post('/api/game-detail', aiLimiter, async (req, res) => {
   try {
     const { gameTitle: rawTitle, filters, language = 'en' } = req.body;
     const gameTitle = sanitizeInput(rawTitle, 80);
@@ -291,7 +327,7 @@ app.post('/api/game-detail', async (req, res) => {
 });
 
 // POST /api/image-proxy/generate - Generate images via Gemini
-app.post('/api/image-proxy/generate', async (req, res) => {
+app.post('/api/image-proxy/generate', imageLimiter, async (req, res) => {
   try {
     const { prompt, gameId } = req.body;
 
