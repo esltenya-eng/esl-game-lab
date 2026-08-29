@@ -3,6 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Chromium for the build-time prerenderer (scripts/prerender-games.mjs, run as
+# part of `npm run build`). puppeteer-core drives this instead of downloading
+# its own Chromium, since a glibc-built Chromium binary won't run on Alpine's
+# musl libc -- Alpine's own `chromium` apk package is built for it.
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Copy package files first for better layer caching
 COPY package*.json ./
 
@@ -65,7 +72,9 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # rewrites *every* unmatched path (including /robots.txt, /sitemap.xml,
 # /favicon.ico, and genuinely-nonexistent paths) to index.html, which made
 # every URL on the site byte-identical and crawlers unable to see any real
-# content. dist/serve.json (copied from public/serve.json) defines a
-# narrower rewrite for just the app's real client-side route (/game/**), so
-# static files serve as themselves and truly unknown paths get a real 404.
+# content. Real static files (robots.txt, sitemap.xml, and any prerendered
+# dist/game/<id>/index.html from scripts/prerender-games.mjs) now serve as
+# themselves; any other path falls through to `serve`'s built-in dist/404.html
+# handling (a copy of the SPA shell, served with a real 404 status) so the
+# client-side app can still take over for games that weren't prerendered.
 CMD ["serve", "dist", "-l", "8080", "--no-clipboard", "--no-port-switching"]

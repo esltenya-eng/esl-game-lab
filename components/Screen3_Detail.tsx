@@ -56,7 +56,7 @@ export const Screen3_Detail: React.FC<Props> = ({
   // Not-found state for cold opens that miss Firestore
   if (isNotFound) {
     return (
-      <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500">
+      <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500" data-prerender-notfound="true">
         <div className="flex items-center justify-between w-full relative h-14 mb-12">
           <button onClick={onBack} className={navBtnStyle} aria-label="Back">
             <ArrowLeft className="w-5 h-5" />
@@ -99,7 +99,7 @@ export const Screen3_Detail: React.FC<Props> = ({
   const shareDisabled = shareStatus !== 'ready';
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500">
+    <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 font-sans relative animate-in fade-in duration-500" data-prerender-ready="true">
       {/* Navigation Header */}
       <div className="flex items-center justify-between w-full relative h-14 mb-12">
           <button onClick={onBack} className={navBtnStyle} aria-label="Back">
